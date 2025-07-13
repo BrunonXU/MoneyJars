@@ -1,8 +1,8 @@
 name: money_jars
 description: 一个美观实用的记账Web应用，采用存钱罐概念管理个人财务
-homepage: https://github.com/YOUR_USERNAME/MoneyJars
-repository: https://github.com/YOUR_USERNAME/MoneyJars
-license: MIT
+homepage: https://github.com/BrunonXU/MoneyJars
+repository: https://github.com/BrunonXU/MoneyJars
+license: Proprietary
 
 publish_to: 'none'
 

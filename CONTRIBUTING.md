@@ -1,6 +1,10 @@
 # 贡献指南
 
-感谢您对 MoneyJars 项目的关注！我们欢迎各种形式的贡献。
+感谢您对 MoneyJars 项目的关注！
+
+⚠️ **重要提醒：本项目为商业软件，受专有许可证保护。**
+
+本项目计划上架iOS App Store，所有代码和设计均为BrunonXU的知识产权。
 
 ## 🤝 如何贡献
 
@@ -15,11 +19,15 @@
 - 提供设计建议或草图
 
 ### 代码贡献
-1. Fork 本仓库
-2. 创建功能分支：`git checkout -b feature/amazing-feature`
-3. 提交更改：`git commit -m 'Add amazing feature'`
-4. 推送到分支：`git push origin feature/amazing-feature`
-5. 创建 Pull Request
+⚠️ **注意：由于本项目为商业软件，代码贡献需要签署贡献者协议。**
+
+1. 联系 BrunonXU 讨论您的想法
+2. 签署贡献者许可协议 (CLA)
+3. Fork 本仓库
+4. 创建功能分支：`git checkout -b feature/amazing-feature`
+5. 提交更改：`git commit -m 'Add amazing feature'`
+6. 推送到分支：`git push origin feature/amazing-feature`
+7. 创建 Pull Request
 
 ## 📋 开发指南
 
@@ -31,7 +39,7 @@
 ### 本地开发
 ```bash
 # 克隆仓库
-git clone https://github.com/YOUR_USERNAME/MoneyJars.git
+git clone https://github.com/BrunonXU/MoneyJars.git
 
 # 安装依赖
 flutter pub get
@@ -56,7 +64,9 @@ flutter run -d chrome
 
 ## 📝 许可证
 
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
+本项目采用专有许可证 - 详见 [LICENSE](LICENSE) 文件。
+
+⚠️ **重要：本软件为商业产品，计划上架iOS App Store。所有权利归BrunonXU所有。**
 
 ## 🙏 致谢
 
