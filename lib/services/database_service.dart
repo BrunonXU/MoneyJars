@@ -1,7 +1,9 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' hide Category;
 import '../models/transaction_record.dart';
 
 class DatabaseService {
@@ -16,13 +18,26 @@ class DatabaseService {
 
   /// 初始化数据库
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'money_jars.db');
-    return await openDatabase(
-      path,
-      version: 2, // 升级版本号
-      onCreate: _createDatabase,
-      onUpgrade: _upgradeDatabase,
-    );
+    // Web平台使用不同的数据库工厂
+    if (kIsWeb) {
+      // 设置Web平台的数据库工厂
+      databaseFactory = databaseFactoryFfiWeb;
+      return await openDatabase(
+        'money_jars.db',
+        version: 2,
+        onCreate: _createDatabase,
+        onUpgrade: _upgradeDatabase,
+      );
+    } else {
+      // 移动平台使用默认路径
+      String path = join(await getDatabasesPath(), 'money_jars.db');
+      return await openDatabase(
+        path,
+        version: 2,
+        onCreate: _createDatabase,
+        onUpgrade: _upgradeDatabase,
+      );
+    }
   }
 
   /// 创建数据库表
