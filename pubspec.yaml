@@ -1,5 +1,8 @@
 name: money_jars
-description: 一个美观实用的记账app，用于追踪收入和支出
+description: 一个美观实用的记账Web应用，采用存钱罐概念管理个人财务
+homepage: https://github.com/YOUR_USERNAME/MoneyJars
+repository: https://github.com/YOUR_USERNAME/MoneyJars
+license: MIT
 
 publish_to: 'none'
 
