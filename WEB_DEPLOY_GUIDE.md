@@ -174,3 +174,49 @@ A: 首次访问需要网络，之后可以离线使用。
 - 自动部署
 - 专业外观
 - 易于维护 
+
+## 🎯 选择建议
+
+### 推荐选择：**什么都不选，直接保存**
+
+因为您已经有了自定义的GitHub Actions工作流（我们之前配置的），所以：
+
+1. **保持 "Source: GitHub Actions" 不变**
+2. **不要点击任何 "Configure" 按钮**
+3. **直接滚动到页面底部，如果有 "Save" 按钮就点击保存**
+
+## 📋 选项说明
+
+- **GitHub Pages Jekyll**：用于Jekyll静态网站生成器（不适合Flutter）
+- **Static HTML**：用于纯HTML文件（我们的Flutter项目需要构建过程）
+
+## 🚀 正确的操作步骤
+
+1. **确认设置**：
+   - Source 应该显示 "GitHub Actions"
+   - 不要选择任何预设的工作流
+
+2. **保存设置**：
+   - 滚动到页面底部
+   - 点击 "Save" 按钮（如果有的话）
+
+3. **检查Actions**：
+   - 访问 https://github.com/BrunonXU/MoneyJars/actions
+   - 查看是否有新的工作流正在运行
+
+## 💡 如果没有Save按钮
+
+如果页面没有Save按钮，说明设置已经自动保存了。直接：
+
+1. **访问Actions页面**：https://github.com/BrunonXU/MoneyJars/actions
+2. **查看最新的工作流运行状态**
+3. **等待部署完成**
+
+## 🎉 预期结果
+
+设置完成后，您的网站将在以下地址可用：
+```
+https://brunonxu.github.io/MoneyJars
+```
+
+**请按照上面的步骤操作，不要选择任何预设工作流，直接保存即可！** 🚀 
