@@ -2,19 +2,18 @@
 <html>
 <head>
   <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
+    动态设置 base href，自动适配本地开发和 GitHub Pages 部署
+    - 本地 (localhost/127.0.0.1): base href = "/"
+    - GitHub Pages: base href = "/MoneyJars/"
   -->
-  <base href="$FLUTTER_BASE_HREF">
+  <script>
+    (function() {
+      var isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+      var base = document.createElement('base');
+      base.href = isLocal ? "/" : "/MoneyJars/";
+      document.head.insertBefore(base, document.head.firstChild);
+    })();
+  </script>
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
