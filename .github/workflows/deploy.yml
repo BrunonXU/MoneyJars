@@ -28,8 +28,8 @@ jobs:
     - name: Install dependencies
       run: flutter pub get
     
-    - name: Setup Web Database
-      run: dart run sqflite_common_ffi_web:setup
+    #- name: Setup Web Database
+     # run: dart run sqflite_common_ffi_web:setup
     
     - name: Build Web
       run: flutter build web --release --no-tree-shake-icons --base-href /MoneyJars/
