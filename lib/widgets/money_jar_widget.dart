@@ -62,7 +62,7 @@ class _MoneyJarWidgetState extends State<MoneyJarWidget> {
                 colors: [
                   _getJarColor().withOpacity(0.1),
                   _getJarColor().withOpacity(0.05),
-                ],
+              ],
               ),
             ),
             child: Column(
@@ -94,20 +94,20 @@ class _MoneyJarWidgetState extends State<MoneyJarWidget> {
                   ),
                   textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
-                ),
+          ),
                 const SizedBox(height: 8),
                 
                 // 金额
-                Text(
+          Text(
                   '¥${widget.amount.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontSize: 20,
-                    fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.bold,
                     color: _getJarColor(),
                   ),
                   textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
-                ),
+        ),
                 const SizedBox(height: 12),
                 
                 // 设置按钮
@@ -122,20 +122,20 @@ class _MoneyJarWidgetState extends State<MoneyJarWidget> {
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
-                        ),
+            ),
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
                       child: const Text(
                         '设置',
                         style: TextStyle(fontSize: 12),
                         overflow: TextOverflow.ellipsis,
+                          ),
                       ),
                     ),
-                  ),
-              ],
+                  ],
+            ),
             ),
           ),
-        ),
       ),
     );
   }
