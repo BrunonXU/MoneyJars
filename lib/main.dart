@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'providers/transaction_provider.dart';
 import 'screens/home_screen.dart';
 import 'constants/app_constants.dart';
@@ -26,9 +27,15 @@ class MoneyJarsApp extends StatelessWidget {
 
     return ChangeNotifierProvider(
       create: (context) => TransactionProvider(),
-      child: MaterialApp(
-        title: 'MoneyJars',
-        debugShowCheckedModeBanner: false,
+      child: ScreenUtilInit(
+        // 设计稿的设备尺寸(单位dp)
+        designSize: const Size(375, 812), // iPhone 11 Pro 尺寸
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) {
+          return MaterialApp(
+            title: 'MoneyJars',
+            debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: const Color(0xFFDC143C),
@@ -39,7 +46,7 @@ class MoneyJarsApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color(0xFF0D2818),
           cardColor: const Color(0xFF1A3D2E),
           dividerColor: const Color(0xFFFFD700),
-          textTheme: const TextTheme(
+          textTheme: TextTheme(
             headlineLarge: AppConstants.headingStyle,
             titleLarge: AppConstants.titleStyle,
             bodyLarge: AppConstants.bodyStyle,
@@ -75,10 +82,12 @@ class MoneyJarsApp extends StatelessWidget {
             ),
             filled: true,
             fillColor: const Color(0xFF1A3D2E),
-            contentPadding: const EdgeInsets.all(AppConstants.spacingLarge),
+            contentPadding: EdgeInsets.all(AppConstants.spacingLarge),
           ),
         ),
         home: const SplashScreen(),
+          );
+        },
       ),
     );
   }

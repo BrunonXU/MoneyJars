@@ -16,11 +16,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../constants/app_constants.dart';
 import '../models/transaction_record.dart';
 import '../providers/transaction_provider.dart';
 import '../widgets/common/error_widget.dart';
 import '../widgets/common/loading_widget.dart';
+import '../utils/responsive_layout.dart';
 
 class JarDetailPage extends StatefulWidget {
   final TransactionType type;
@@ -87,54 +89,131 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100], // 设置外部背景色
-      body: Center(
-        child: Container(
-          // ===== 强制手机尺寸显示 =====
-          // 在Web端固定显示手机尺寸，模拟手机屏幕效果
-          width: 375, // iPhone标准宽度
-          height: 812, // iPhone标准高度
-          margin: const EdgeInsets.symmetric(vertical: 20), // 上下留白
-          constraints: const BoxConstraints(
-            maxWidth: 375,
-            maxHeight: 812,
-          ),
-          decoration: BoxDecoration(
-            // 添加手机边框效果
-            border: Border.all(
-              color: Colors.grey.withOpacity(0.3),
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-            color: Colors.white, // 手机屏幕背景色
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Column(
-              children: [
-                // AppBar区域 - 包含在手机尺寸内
-                _buildAppBar(),
-                // 主要内容区域
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: AppConstants.backgroundGradient,
-                      ),
-                    ),
-                    child: _buildBodyContent(context),
+      body: ResponsiveLayout.responsive(
+        mobile: _buildMobileDetailLayout(),
+        tablet: _buildTabletDetailLayout(),
+        desktop: _buildDesktopDetailLayout(),
+      ),
+    );
+  }
+  
+  // 移动端详情页布局
+  Widget _buildMobileDetailLayout() {
+    return Center(
+      child: Container(
+        width: 1.sw,
+        height: 1.sh,
+        margin: EdgeInsets.zero,
+        constraints: BoxConstraints(
+          maxWidth: 1.sw,
+          maxHeight: 1.sh,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+        ),
+        child: Column(
+          children: [
+            _buildAppBar(),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: AppConstants.backgroundGradient,
                   ),
                 ),
-              ],
+                child: _buildBodyContent(context),
+              ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  // 平板端详情页布局
+  Widget _buildTabletDetailLayout() {
+    final layout = ResponsiveLayout.getDetailLayout();
+    
+    return Center(
+      child: Container(
+        width: layout['width'],
+        height: layout['height'],
+        margin: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20.r,
+              offset: Offset(0, 10.h),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16.r),
+          child: Column(
+            children: [
+              _buildAppBar(),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: AppConstants.backgroundGradient,
+                    ),
+                  ),
+                  child: _buildBodyContent(context),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  // 桌面端详情页布局
+  Widget _buildDesktopDetailLayout() {
+    final layout = ResponsiveLayout.getDetailLayout();
+    
+    return Center(
+      child: Container(
+        width: layout['width'],
+        height: layout['height'],
+        margin: EdgeInsets.all(30.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20.r,
+              offset: Offset(0, 10.h),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20.r),
+          child: Column(
+            children: [
+              _buildAppBar(),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: AppConstants.backgroundGradient,
+                    ),
+                  ),
+                  child: _buildBodyContent(context),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -223,29 +302,33 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
   }
 
   Widget _buildBodyContent(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        top: AppConstants.spacingLarge,
-        left: AppConstants.spacingLarge,
-        right: AppConstants.spacingLarge,
-        bottom: AppConstants.spacingLarge,
-      ),
-      child: Column(
-        children: [
-          _buildAmountCard(),
-          const SizedBox(height: AppConstants.spacingLarge),
-          if (_showFilters) _buildFiltersCard(),
-          const SizedBox(height: AppConstants.spacingMedium),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildCategoryStats(),
-                _buildTransactionsList(),
-              ],
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Padding(
+        padding: EdgeInsets.only(
+          top: AppConstants.spacingLarge.h,
+          left: AppConstants.spacingLarge.w,
+          right: AppConstants.spacingLarge.w,
+          bottom: AppConstants.spacingLarge.h,
+        ),
+        child: Column(
+          children: [
+            _buildAmountCard(),
+            SizedBox(height: _showFilters ? AppConstants.spacingMedium.h : AppConstants.spacingLarge.h),
+            if (_showFilters) _buildFiltersCard(),
+            if (_showFilters) SizedBox(height: AppConstants.spacingMedium.h),
+            Container(
+              height: 450.h, // 响应式高度避免溢出
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildCategoryStats(),
+                  _buildTransactionsList(),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -331,7 +414,10 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(AppConstants.spacingLarge),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppConstants.spacingLarge,
+              vertical: AppConstants.spacingMedium,
+            ),
             child: Text(
               widget.isComprehensive ? '分类统计' : '${widget.type == TransactionType.income ? '收入' : '支出'}分类',
               style: AppConstants.titleStyle.copyWith(
@@ -341,12 +427,12 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
           ),
           Expanded(
             child: ListView.separated(
-              padding: const EdgeInsets.symmetric(
+              padding: EdgeInsets.symmetric(
                 horizontal: AppConstants.spacingLarge,
-                vertical: AppConstants.spacingMedium,
+                vertical: AppConstants.spacingSmall,
               ),
               itemCount: stats.length,
-              separatorBuilder: (context, index) => const SizedBox(height: AppConstants.spacingMedium),
+              separatorBuilder: (context, index) => const SizedBox(height: AppConstants.spacingSmall),
               itemBuilder: (context, index) {
                 final category = stats.keys.elementAt(index);
                 final amount = stats[category]!;
@@ -373,7 +459,10 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
       },
       borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
       child: Container(
-        padding: const EdgeInsets.all(AppConstants.spacingMedium),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppConstants.spacingMedium,
+          vertical: AppConstants.spacingSmall,
+        ),
         decoration: BoxDecoration(
           color: _selectedCategory == category 
               ? color.withOpacity(0.1)
@@ -400,6 +489,8 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
                 style: AppConstants.bodyStyle.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             Column(
@@ -409,11 +500,14 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
                   '¥${amount.toStringAsFixed(2)}',
                   style: AppConstants.bodyStyle.copyWith(
                     fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
                 Text(
                   '$percentage%',
-                  style: AppConstants.captionStyle,
+                  style: AppConstants.captionStyle.copyWith(
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -427,7 +521,10 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
   Widget _buildFiltersCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppConstants.spacingLarge),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppConstants.spacingLarge,
+        vertical: AppConstants.spacingMedium,
+      ),
       decoration: BoxDecoration(
         color: AppConstants.cardColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
@@ -435,71 +532,94 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             '筛选条件',
             style: AppConstants.titleStyle.copyWith(
               color: AppConstants.primaryColor,
+              fontSize: 16,
             ),
           ),
-          const SizedBox(height: AppConstants.spacingMedium),
+          const SizedBox(height: AppConstants.spacingSmall),
           
           // 搜索框
-          TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: '搜索描述或金额...',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                      },
-                    )
-                  : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-                borderSide: BorderSide(
-                  color: AppConstants.dividerColor,
-                  width: 1,
+          SizedBox(
+            height: 45,
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: '搜索描述或金额...',
+                prefixIcon: const Icon(Icons.search, size: 20),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 20),
+                        onPressed: () {
+                          _searchController.clear();
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                  borderSide: BorderSide(
+                    color: AppConstants.dividerColor,
+                    width: 1,
+                  ),
+                ),
+                filled: true,
+                fillColor: AppConstants.backgroundColor,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingSmall,
+                  vertical: AppConstants.spacingSmall,
                 ),
               ),
-              filled: true,
-              fillColor: AppConstants.backgroundColor,
             ),
           ),
           
-          const SizedBox(height: AppConstants.spacingMedium),
+          const SizedBox(height: AppConstants.spacingSmall),
           
           // 日期范围选择
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.date_range),
-                  label: Text(_startDate != null 
-                      ? DateFormat('MM/dd').format(_startDate!)
-                      : '开始日期'),
-                  onPressed: () => _selectStartDate(context),
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                child: SizedBox(
+                  height: 40,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.date_range, size: 16),
+                    label: Text(
+                      _startDate != null 
+                          ? DateFormat('MM/dd').format(_startDate!)
+                          : '开始日期',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    onPressed: () => _selectStartDate(context),
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: AppConstants.spacingMedium),
+              const SizedBox(width: AppConstants.spacingSmall),
               Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.date_range),
-                  label: Text(_endDate != null 
-                      ? DateFormat('MM/dd').format(_endDate!)
-                      : '结束日期'),
-                  onPressed: () => _selectEndDate(context),
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                child: SizedBox(
+                  height: 40,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.date_range, size: 16),
+                    label: Text(
+                      _endDate != null 
+                          ? DateFormat('MM/dd').format(_endDate!)
+                          : '结束日期',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    onPressed: () => _selectEndDate(context),
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                     ),
                   ),
                 ),

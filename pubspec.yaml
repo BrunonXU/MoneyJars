@@ -35,6 +35,9 @@ dependencies:
   animations: ^2.0.8
   flutter_staggered_animations: ^1.1.1
   
+  # 屏幕适配
+  flutter_screenutil: ^5.9.0
+  
   # 工具库
   intl: ^0.18.1
   uuid: ^4.1.0

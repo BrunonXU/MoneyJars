@@ -4,7 +4,11 @@
       "Bash(claude --version)",
       "Bash(flutter run:*)",
       "Bash(copy:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(flutter build:*)",
+      "Bash(flutter pub:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

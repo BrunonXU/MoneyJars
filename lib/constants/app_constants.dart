@@ -5,12 +5,15 @@
  * - 统一管理应用的颜色、尺寸、文本等常量
  * - 提供设计规范和主题配置
  * - 集中管理动画参数和UI配置
+ * - 支持响应式设计和屏幕适配
  * 
  * 相关修改位置：
  * - 修改6：环状图视觉增强 - 颜色优化，色轮等距分布的12种鲜艳颜色 (第28-40行)
+ * - 响应式设计：添加flutter_screenutil支持，优化间距和尺寸系统
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 应用设计常量
 class AppConstants {
@@ -83,10 +86,10 @@ class AppConstants {
   /// 间距
   static const double spacingXSmall = 4.0;
   static const double spacingSmall = 8.0;
-  static const double spacingMedium = 16.0;
-  static const double spacingLarge = 24.0;
-  static const double spacingXLarge = 32.0;
-  static const double spacingXXLarge = 48.0;
+  static const double spacingMedium = 12.0;
+  static const double spacingLarge = 16.0;
+  static const double spacingXLarge = 24.0;
+  static const double spacingXXLarge = 32.0;
 
   /// 圆角
   static const double radiusSmall = 8.0;
@@ -186,60 +189,60 @@ class AppConstants {
   static const Duration animationBounce = Duration(milliseconds: 1000);
   static const Duration animationMicro = Duration(milliseconds: 50);
 
-  // ===== 罐头尺寸控制参数 =====
-  // 这些参数控制罐头组件的基础尺寸，调整这些值可以改变罐头大小
-  static const double jarWidth = 320.0;   // 罐头宽度 - 调整此值改变罐头宽度
-  static const double jarHeight = 450.0;  // 罐头高度 - 调整此值改变罐头高度
-  static const double jarProgressHeight = 12.0;  // 进度条高度 - 调整此值改变进度条厚度
+  // ===== 响应式尺寸控制参数 =====
+  // 这些参数控制罐头组件的基础尺寸，使用响应式设计
+  static double get jarWidth => 320.w;   // 罐头宽度 - 响应式宽度
+  static double get jarHeight => 450.h;  // 罐头高度 - 响应式高度
+  static double get jarProgressHeight => 12.h;  // 进度条高度 - 响应式厚度
 
-  // ===== 拖拽和图表尺寸控制参数 =====
-  // 这些参数控制拖拽记录和环状图的尺寸
-  static const double dragRecordSize = 60.0;  // 拖拽记录大小 - 调整此值改变拖拽元素大小
-  static const double pieChartSize = 350.0;   // 环状图大小 - 调整此值改变图表大小
-  static const double pieChartRadius = 165.0; // 环状图半径 - 调整此值改变图表半径
-  static const double pieChartCenterRadius = 70.0; // 中心圆半径 - 调整此值改变中心空洞大小
-  static const double dragHoverDistance = 200.0; // 拖拽悬停距离
-  static const double dragDropDistance = 100.0;  // 拖拽释放距离
+  // ===== 拖拽和图表响应式尺寸参数 =====
+  // 这些参数控制拖拽记录和环状图的尺寸，支持屏幕适配
+  static double get dragRecordSize => 60.w;  // 拖拽记录大小 - 响应式大小
+  static double get pieChartSize => 350.w;   // 环状图大小 - 响应式大小
+  static double get pieChartRadius => 165.w; // 环状图半径 - 响应式半径
+  static double get pieChartCenterRadius => 70.w; // 中心圆半径 - 响应式半径
+  static double get dragHoverDistance => 200.w; // 拖拽悬停距离 - 响应式距离
+  static double get dragDropDistance => 100.w;  // 拖拽释放距离 - 响应式距离
 
-  // ===== 应用栏和页面布局控制参数 =====
-  // 这些参数控制应用栏和页面整体布局的尺寸
-  static const double appBarHeight = 100.0; // 应用栏高度 - 调整此值改变顶部栏高度
+  // ===== 应用栏和页面布局响应式参数 =====
+  // 这些参数控制应用栏和页面整体布局的尺寸，支持屏幕适配
+  static double get appBarHeight => 100.h; // 应用栏高度 - 响应式高度
 
-  /// 页面指示器
-  static const double pageIndicatorSize = 8.0;
-  static const double pageIndicatorSpacing = 20.0;
+  /// 页面指示器 - 响应式
+  static double get pageIndicatorSize => 8.w;
+  static double get pageIndicatorSpacing => 20.w;
 
-  /// 输入相关
-  static const double inputBorderRadius = 12.0;
-  static const double inputPadding = 16.0;
+  /// 输入相关 - 响应式
+  static double get inputBorderRadius => 12.r;
+  static double get inputPadding => 16.w;
 
-  /// 图标尺寸
-  static const double iconSmall = 16.0;
-  static const double iconMedium = 24.0;
-  static const double iconLarge = 32.0;
-  static const double iconXLarge = 48.0;
+  /// 图标尺寸 - 响应式
+  static double get iconSmall => 16.w;
+  static double get iconMedium => 24.w;
+  static double get iconLarge => 32.w;
+  static double get iconXLarge => 48.w;
 
-  /// 文本样式
-  static const TextStyle headingStyle = TextStyle(
-    fontSize: fontSizeXXLarge,
+  /// 文本样式 - 响应式
+  static TextStyle get headingStyle => TextStyle(
+    fontSize: fontSizeXXLarge.sp,
     fontWeight: FontWeight.bold,
     color: textPrimaryColor,
   );
 
-  static const TextStyle titleStyle = TextStyle(
-    fontSize: fontSizeXLarge,
+  static TextStyle get titleStyle => TextStyle(
+    fontSize: fontSizeXLarge.sp,
     fontWeight: FontWeight.w600,
     color: textPrimaryColor,
   );
 
-  static const TextStyle bodyStyle = TextStyle(
-    fontSize: fontSizeMedium,
+  static TextStyle get bodyStyle => TextStyle(
+    fontSize: fontSizeMedium.sp,
     fontWeight: FontWeight.normal,
     color: textPrimaryColor,
   );
 
-  static const TextStyle captionStyle = TextStyle(
-    fontSize: fontSizeSmall,
+  static TextStyle get captionStyle => TextStyle(
+    fontSize: fontSizeSmall.sp,
     fontWeight: FontWeight.normal,
     color: textSecondaryColor,
   );

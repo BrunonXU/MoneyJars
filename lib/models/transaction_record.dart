@@ -139,7 +139,7 @@ class SubCategory {
   static IconData _getIconFromCodePoint(dynamic codePoint) {
     if (codePoint == null) return Icons.error;
     if (codePoint is int) {
-      return IconData(codePoint, fontFamily: 'MaterialIcons');
+      return const IconData(0xe88e, fontFamily: 'MaterialIcons'); // 使用常量图标
     }
     return Icons.error;
   }
