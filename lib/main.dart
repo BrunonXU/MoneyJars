@@ -16,12 +16,12 @@ class MoneyJarsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 设置状态栏样式
+    // 设置状态栏样式 - 圣诞主题
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: AppConstants.backgroundColor,
-      systemNavigationBarIconBrightness: Brightness.dark,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Color(0xFF0D2818),
+      systemNavigationBarIconBrightness: Brightness.light,
     ));
 
     return ChangeNotifierProvider(
@@ -31,14 +31,14 @@ class MoneyJarsApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: AppConstants.primaryColor,
-            brightness: Brightness.light,
+            seedColor: const Color(0xFFDC143C),
+            brightness: Brightness.dark,
           ),
           useMaterial3: true,
           fontFamily: 'SF Pro Display',
-          scaffoldBackgroundColor: AppConstants.backgroundColor,
-          cardColor: AppConstants.cardColor,
-          dividerColor: AppConstants.dividerColor,
+          scaffoldBackgroundColor: const Color(0xFF0D2818),
+          cardColor: const Color(0xFF1A3D2E),
+          dividerColor: const Color(0xFFFFD700),
           textTheme: const TextTheme(
             headlineLarge: AppConstants.headingStyle,
             titleLarge: AppConstants.titleStyle,
@@ -47,17 +47,18 @@ class MoneyJarsApp extends StatelessWidget {
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppConstants.primaryColor,
-              foregroundColor: AppConstants.cardColor,
+              backgroundColor: const Color(0xFF1A3D2E),
+              foregroundColor: const Color(0xFFFFFFFF),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                side: const BorderSide(color: Color(0xFFDC143C), width: 2),
               ),
               elevation: 0,
             ),
           ),
           outlinedButtonTheme: OutlinedButtonThemeData(
             style: OutlinedButton.styleFrom(
-              side: BorderSide(color: AppConstants.primaryColor),
+              side: const BorderSide(color: Color(0xFFDC143C)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
               ),
@@ -66,14 +67,14 @@ class MoneyJarsApp extends StatelessWidget {
           inputDecorationTheme: InputDecorationTheme(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-              borderSide: BorderSide(color: AppConstants.dividerColor),
+              borderSide: const BorderSide(color: Color(0xFFDC143C)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-              borderSide: BorderSide(color: AppConstants.primaryColor, width: 2),
+              borderSide: const BorderSide(color: Color(0xFFDC143C), width: 2),
             ),
             filled: true,
-            fillColor: AppConstants.backgroundColor,
+            fillColor: const Color(0xFF1A3D2E),
             contentPadding: const EdgeInsets.all(AppConstants.spacingLarge),
           ),
         ),
@@ -184,7 +185,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     if (_hasError) {
       return Scaffold(
-        backgroundColor: AppConstants.backgroundColor,
+        backgroundColor: const Color(0xFF0D2818),
         body: AppErrorWidget(
           message: AppConstants.errorInitialization,
           details: _errorMessage,
@@ -200,58 +201,89 @@ class _SplashScreenState extends State<SplashScreen>
     }
 
     return Scaffold(
-      backgroundColor: AppConstants.backgroundColor,
-      body: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // 主要内容
-                Opacity(
-                  opacity: _fadeAnimation.value,
-                  child: Transform.scale(
-                    scale: _scaleAnimation.value,
-                    child: Column(
-                      children: [
-                        // MoneyJars 图标
-                        Hero(
-                          tag: 'app_icon',
-                          child: RotationTransition(
-                            turns: _rotationAnimation,
-                            child: Container(
-                              width: 120,
-                              height: 120,
-                              decoration: BoxDecoration(
-                                color: AppConstants.primaryColor,
-                                borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppConstants.primaryColor.withOpacity(0.3),
-                                    blurRadius: 30,
-                                    offset: const Offset(0, 15),
+      backgroundColor: const Color(0xFF0D2818),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0D2818),
+              Color(0xFF1A3D2E),
+              Color(0xFF0D2818),
+            ],
+          ),
+        ),
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 主要内容
+                  Opacity(
+                    opacity: _fadeAnimation.value,
+                    child: Transform.scale(
+                      scale: _scaleAnimation.value,
+                      child: Column(
+                        children: [
+                          // MoneyJars 图标
+                          Hero(
+                            tag: 'app_icon',
+                            child: RotationTransition(
+                              turns: _rotationAnimation,
+                              child: Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1A3D2E),
+                                  borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
+                                  border: Border.all(
+                                    color: const Color(0xFFDC143C),
+                                    width: 2,
                                   ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.savings,
-                                size: 60,
-                                color: AppConstants.cardColor,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFDC143C).withOpacity(0.5),
+                                      blurRadius: 20,
+                                      spreadRadius: 2,
+                                    ),
+                                    BoxShadow(
+                                      color: const Color(0xFFFFD700).withOpacity(0.3),
+                                      blurRadius: 15,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.park,
+                                  size: 60,
+                                  color: Color(0xFF228B22),
+                                ),
                               ),
                             ),
                           ),
-                        ),
                         
                         const SizedBox(height: AppConstants.spacingXLarge),
                         
-                        // 应用名称
+                        // 应用名称 - 圣诞主题
                         Text(
-                          'MoneyJars',
+                          'Christmas Jars',
                           style: AppConstants.headingStyle.copyWith(
                             fontSize: 36,
-                            color: AppConstants.primaryColor,
+                            color: const Color(0xFFDC143C),
                             letterSpacing: 1.5,
+                            shadows: [
+                              Shadow(
+                                color: const Color(0xFFDC143C).withOpacity(0.8),
+                                blurRadius: 10,
+                              ),
+                              Shadow(
+                                color: const Color(0xFFFFD700).withOpacity(0.6),
+                                blurRadius: 20,
+                              ),
+                            ],
                           ),
                         ),
                         
@@ -259,9 +291,9 @@ class _SplashScreenState extends State<SplashScreen>
                         
                         // 副标题
                         Text(
-                          '智能记账，精彩生活',
+                          '圣诞节记账，温馨节日',
                           style: AppConstants.bodyStyle.copyWith(
-                            color: AppConstants.textSecondaryColor,
+                            color: const Color(0xFFFFFFFF).withOpacity(0.7),
                             fontSize: 18,
                           ),
                         ),
@@ -280,8 +312,8 @@ class _SplashScreenState extends State<SplashScreen>
                     height: 40,
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppConstants.primaryColor.withOpacity(0.8),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Color(0xFFDC143C),
                       ),
                     ),
                   ),
@@ -296,6 +328,7 @@ class _SplashScreenState extends State<SplashScreen>
                     '正在初始化...',
                     style: AppConstants.captionStyle.copyWith(
                       fontSize: 14,
+                      color: const Color(0xFFFFFFFF).withOpacity(0.6),
                     ),
                   ),
                 ),
@@ -304,6 +337,7 @@ class _SplashScreenState extends State<SplashScreen>
           );
         },
       ),
-    );
+    ),
+  );
   }
 } 

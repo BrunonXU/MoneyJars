@@ -174,6 +174,17 @@ class _DragRecordInputState extends State<DragRecordInput>
         return Container(
           width: double.infinity,
           height: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                AppConstants.primaryGradient[0].withOpacity((_isDragging ? 0.1 : 0.3) * _fadeAnimation.value),
+                AppConstants.primaryGradient[1].withOpacity((_isDragging ? 0.2 : 0.5) * _fadeAnimation.value),
+                Colors.black.withOpacity((_isDragging ? 0.4 : 0.7) * _fadeAnimation.value),
+              ],
+            ),
+          ),
           child: Stack(
             children: [
               // 背景模糊效果 - 初始就有，拖拽时消失
@@ -187,10 +198,6 @@ class _DragRecordInputState extends State<DragRecordInput>
                     color: Colors.transparent,
                   ),
                 ),
-              // 蒙版 - 初始朦胧，拖拽时变清晰
-              Container(
-                color: Colors.black.withOpacity((_isDragging ? 0.2 : 0.7) * _fadeAnimation.value),
-              ),
             ],
           ),
         );
@@ -488,9 +495,15 @@ class _DragRecordInputState extends State<DragRecordInput>
           margin: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLarge),
           padding: const EdgeInsets.all(AppConstants.spacingMedium),
           decoration: BoxDecoration(
-            color: AppConstants.cardColor.withOpacity(0.9),
+            gradient: LinearGradient(
+              colors: AppConstants.cardGradient,
+            ),
             borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
             boxShadow: AppConstants.shadowMedium,
+            border: Border.all(
+              color: AppConstants.primaryColor.withOpacity(0.2),
+              width: 1,
+            ),
           ),
           child: Text(
             hintText,
@@ -536,13 +549,13 @@ class _DragRecordInputState extends State<DragRecordInput>
     
     final distance = (_recordPosition - center).distance;
     
-    if (distance > AppConstants.pieChartRadius + 50) {
+    if (distance > AppConstants.pieChartRadius + 60) {
       // 在环外，可以创建新分类
       setState(() {
         _hoveredCategory = null;
         _canCreateNewCategory = true;
       });
-    } else if (distance > AppConstants.pieChartCenterRadius && distance < AppConstants.pieChartRadius + 30) {
+    } else if (distance > AppConstants.pieChartCenterRadius && distance <= AppConstants.pieChartRadius + 40) {
       // 在环状图区域内（包括悬停扩展区域）
       final angle = math.atan2(
         _recordPosition.dy - center.dy,
@@ -557,10 +570,13 @@ class _DragRecordInputState extends State<DragRecordInput>
         
         if (categoryNames.isNotEmpty) {
           final categoryIndex = _calculateCategoryIndex(angle, categoryNames.length);
-          setState(() {
-            _hoveredCategory = categoryNames[categoryIndex];
-            _canCreateNewCategory = false;
-          });
+          // 添加范围检查
+          if (categoryIndex >= 0 && categoryIndex < categoryNames.length) {
+            setState(() {
+              _hoveredCategory = categoryNames[categoryIndex];
+              _canCreateNewCategory = false;
+            });
+          }
         }
       } else {
         final categories = provider.getAllCategories(widget.type);
@@ -568,10 +584,13 @@ class _DragRecordInputState extends State<DragRecordInput>
         
         if (categoryNames.isNotEmpty) {
           final categoryIndex = _calculateCategoryIndex(angle, categoryNames.length);
-          setState(() {
-            _hoveredCategory = categoryNames[categoryIndex];
-            _canCreateNewCategory = false;
-          });
+          // 添加范围检查
+          if (categoryIndex >= 0 && categoryIndex < categoryNames.length) {
+            setState(() {
+              _hoveredCategory = categoryNames[categoryIndex];
+              _canCreateNewCategory = false;
+            });
+          }
         }
       }
     } else {
@@ -703,14 +722,18 @@ class _DragRecordInputState extends State<DragRecordInput>
   int _calculateCategoryIndex(double angle, int categoryCount) {
     // 绘制时从-π/2开始，需要与此保持一致
     // 将角度标准化到[0, 2π]范围
-    final normalizedAngle = (angle + math.pi / 2 + 2 * math.pi) % (2 * math.pi);
+    double normalizedAngle = (angle + math.pi / 2 + 2 * math.pi) % (2 * math.pi);
     
     // 计算角度步长
     final angleStep = 2 * math.pi / categoryCount;
     
-    // 计算最接近的分类索引，增加0.5进行四舍五入
-    final rawIndex = normalizedAngle / angleStep;
-    final categoryIndex = (rawIndex + 0.5).floor() % categoryCount;
+    // 计算最接近的分类索引
+    // 由于我们从-π/2开始绘制，第一个分类在顶部
+    int categoryIndex = (normalizedAngle / angleStep).round() % categoryCount;
+    
+    // 确保索引在有效范围内
+    if (categoryIndex < 0) categoryIndex += categoryCount;
+    if (categoryIndex >= categoryCount) categoryIndex -= categoryCount;
     
     return categoryIndex;
   }

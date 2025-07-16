@@ -32,29 +32,63 @@ class JarDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppConstants.backgroundColor,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
           isComprehensive 
               ? '综合统计' 
               : (type == TransactionType.income ? '收入详情' : '支出详情'),
           style: AppConstants.titleStyle.copyWith(
-            color: AppConstants.primaryColor,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                color: Colors.black.withOpacity(0.3),
+                offset: const Offset(0, 1),
+                blurRadius: 2,
+              ),
+            ],
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppConstants.primaryColor),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(AppConstants.spacingLarge),
-        child: Column(
-          children: [
-            _buildAmountCard(),
-            const SizedBox(height: AppConstants.spacingLarge),
-            Expanded(child: _buildCategoryStats()),
-          ],
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: AppConstants.primaryGradient,
+            ),
+          ),
         ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: AppConstants.backgroundGradient,
+          ),
+        ),
+        child: _buildBodyContent(context),
+      ),
+    );
+  }
+
+  Widget _buildBodyContent(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        top: kToolbarHeight + MediaQuery.of(context).padding.top,
+        left: AppConstants.spacingLarge,
+        right: AppConstants.spacingLarge,
+        bottom: AppConstants.spacingLarge,
+      ),
+      child: Column(
+        children: [
+          _buildAmountCard(),
+          const SizedBox(height: AppConstants.spacingLarge),
+          Expanded(child: _buildCategoryStats()),
+        ],
       ),
     );
   }
@@ -72,9 +106,15 @@ class JarDetailPage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.spacingLarge),
       decoration: BoxDecoration(
-        color: AppConstants.cardColor,
+        gradient: LinearGradient(
+          colors: AppConstants.cardGradient,
+        ),
         borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
-        boxShadow: AppConstants.shadowMedium,
+        boxShadow: AppConstants.shadowLarge,
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
       ),
       child: Column(
         children: [

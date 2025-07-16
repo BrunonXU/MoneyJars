@@ -11,9 +11,18 @@
       var isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
       var base = document.createElement('base');
       base.href = isLocal ? "/" : "/MoneyJars/";
+      
+      // 删除现有的 base 标签并插入新的
+      var existingBase = document.querySelector('base');
+      if (existingBase) {
+        existingBase.remove();
+      }
       document.head.insertBefore(base, document.head.firstChild);
     })();
   </script>
+
+  <!-- Flutter 构建系统需要的占位符，会被上面的 JS 动态替换 -->
+  <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">

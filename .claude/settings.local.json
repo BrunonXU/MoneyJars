@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude --version)",
+      "Bash(flutter run:*)",
+      "Bash(copy:*)",
+      "Bash(cp:*)"
+    ],
+    "deny": []
+  }
+}

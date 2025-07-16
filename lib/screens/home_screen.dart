@@ -162,112 +162,161 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppConstants.backgroundColor,
-      extendBodyBehindAppBar: true,
-      appBar: _buildAppBar(),
-      body: Consumer<TransactionProvider>(
-        builder: (context, provider, child) {
-          if (_isLoading) {
-            return const LoadingWidget(message: '加载中...');
-          }
-
-          if (_errorMessage != null) {
-            return AppErrorWidget(
-              message: _errorMessage!,
-              onRetry: () {
-                setState(() {
-                  _errorMessage = null;
-                  _isLoading = true;
-                });
-                _loadData(provider);
-              },
-            );
-          }
-
-          return _buildContent(provider);
-        },
+      backgroundColor: Colors.grey[100], // 设置外部背景色
+      body: Center(
+        child: Container(
+          // ===== 强制手机尺寸显示 =====
+          // 在Web端固定显示手机尺寸，模拟手机屏幕效果
+          width: 375, // iPhone标准宽度
+          height: 812, // iPhone标准高度
+          margin: const EdgeInsets.symmetric(vertical: 20), // 上下留白
+          constraints: const BoxConstraints(
+            maxWidth: 375,
+            maxHeight: 812,
+          ),
+          decoration: BoxDecoration(
+            // 添加手机边框效果
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.3),
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+            color: Colors.white, // 手机屏幕背景色
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Column(
+              children: [
+                // AppBar区域 - 包含在手机尺寸内
+                _buildAppBar(),
+                // 主要内容区域
+                Expanded(
+                  child: Stack(
+                    children: [
+                      _buildBackground(),  // 使用新的背景
+                      _buildBodyContent(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(AppConstants.appBarHeight + 6), // 增加高度
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppConstants.backgroundColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(top: AppConstants.spacingSmall), // 向上调整
-            child: AppBar(
-              leading: Padding(
+  Widget _buildBodyContent() {
+    return Consumer<TransactionProvider>(
+      builder: (context, provider, child) {
+        if (_isLoading) {
+          return const LoadingWidget(message: '加载中...');
+        }
+
+        if (_errorMessage != null) {
+          return AppErrorWidget(
+            message: _errorMessage!,
+            onRetry: () {
+              setState(() {
+                _errorMessage = null;
+                _isLoading = true;
+              });
+              _loadData(provider);
+            },
+          );
+        }
+
+        return _buildContent(provider);
+      },
+    );
+  }
+
+  Widget _buildAppBar() {
+    return Container(
+      height: AppConstants.appBarHeight + 6,
+      decoration: BoxDecoration(
+        color: AppConstants.backgroundColor,
+        boxShadow: AppConstants.shadowMedium,
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(top: AppConstants.spacingSmall),
+          child: Row(
+            children: [
+              // 左侧设置按钮
+              Padding(
                 padding: const EdgeInsets.only(left: AppConstants.spacingMedium),
                 child: IconButton(
                   icon: Container(
                     padding: const EdgeInsets.all(AppConstants.spacingSmall),
                     decoration: BoxDecoration(
-                      color: AppConstants.primaryColor.withOpacity(0.1),
+                      color: AppConstants.backgroundColor,
                       borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                      boxShadow: AppConstants.shadowSmall,
                     ),
-                    child: const Icon(
-                      Icons.settings_outlined,
-                      color: AppConstants.primaryColor,
-                      size: AppConstants.iconMedium,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                      child: Image.asset(
+                        'assets/images/icons-1.png',
+                        width: AppConstants.iconMedium,
+                        height: AppConstants.iconMedium,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                   onPressed: _showSettings,
                   tooltip: AppConstants.buttonSettings,
                 ),
               ),
-              title: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Hero(
-                    tag: 'app_icon',
-                    child: Container(
-                      width: AppConstants.iconXLarge + 4,
-                      height: AppConstants.iconXLarge + 4,
-                      decoration: BoxDecoration(
-                        color: AppConstants.primaryColor,
-                        borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppConstants.primaryColor.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+              // 中间标题
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Hero(
+                      tag: 'app_icon',
+                      child: Container(
+                        width: AppConstants.iconXLarge + 4,
+                        height: AppConstants.iconXLarge + 4,
+                        decoration: BoxDecoration(
+                          color: AppConstants.backgroundColor,
+                          borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                          boxShadow: AppConstants.shadowMedium,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                          child: Image.asset(
+                            'assets/images/piggy_bank.png',
+                            width: AppConstants.iconMedium,
+                            height: AppConstants.iconMedium,
+                            fit: BoxFit.contain,
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.savings,
-                        size: AppConstants.iconMedium,
-                        color: AppConstants.cardColor,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: AppConstants.spacingMedium),
-                  Text(
-                    'MoneyJars',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppConstants.primaryColor,
-                      fontSize: AppConstants.fontSizeXLarge,
+                    const SizedBox(width: AppConstants.spacingMedium),
+                    Text(
+                      'MoneyJars',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppConstants.primaryColor,
+                        fontSize: AppConstants.fontSizeXLarge,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              centerTitle: true,
-            ),
+              // 右侧占位，保持平衡
+              const SizedBox(width: 60),
+            ],
           ),
         ),
       ),
@@ -277,48 +326,91 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildContent(TransactionProvider provider) {
     return Stack(
       children: [
-        // 主要内容 - 垂直方向的PageView
-        PageView(
-          controller: _pageController,
-          scrollDirection: Axis.vertical,
-          onPageChanged: _onPageChanged,
-          physics: const ClampingScrollPhysics(),
-          children: [
-            _buildJarPage(
-              title: '${AppConstants.labelExpense}罐头',
-              type: TransactionType.expense,
-              currentAmount: provider.totalExpense,
-              targetAmount: provider.jarSettings.targetAmount,
-              color: AppConstants.expenseColor,
-              provider: provider,
-            ),
-            _buildJarPage(
-              title: provider.jarSettings.title,
-              type: TransactionType.income,
-              currentAmount: provider.netIncome,
-              targetAmount: provider.jarSettings.targetAmount,
-              color: provider.netIncome >= 0 
-                  ? AppConstants.comprehensivePositiveColor 
-                  : AppConstants.comprehensiveNegativeColor,
-              provider: provider,
-              isComprehensive: true,
-            ),
-            _buildJarPage(
-              title: '${AppConstants.labelIncome}罐头',
-              type: TransactionType.income,
-              currentAmount: provider.totalIncome,
-              targetAmount: provider.jarSettings.targetAmount,
-              color: AppConstants.incomeColor,
-              provider: provider,
-            ),
-          ],
+        // 主要内容区域 - 更大的空间分配给罐头
+        Positioned(
+          top: 20, // 移除AppBar高度依赖
+          left: 80, // 为左侧导航栏预留空间
+          right: 80, // 为右侧页面指示器留空
+          bottom: 0,
+          child: PageView(
+            controller: _pageController,
+            scrollDirection: Axis.vertical,
+            onPageChanged: _onPageChanged,
+            physics: const ClampingScrollPhysics(),
+            children: [
+              _buildJarPage(
+                title: '${AppConstants.labelExpense}罐头',
+                type: TransactionType.expense,
+                currentAmount: provider.totalExpense,
+                targetAmount: provider.jarSettings.targetAmount,
+                color: AppConstants.expenseColor,
+                provider: provider,
+              ),
+              _buildJarPage(
+                title: provider.jarSettings.title,
+                type: TransactionType.income,
+                currentAmount: provider.netIncome,
+                targetAmount: provider.jarSettings.targetAmount,
+                color: provider.netIncome >= 0 
+                    ? AppConstants.comprehensivePositiveColor 
+                    : AppConstants.comprehensiveNegativeColor,
+                provider: provider,
+                isComprehensive: true,
+              ),
+              _buildJarPage(
+                title: '${AppConstants.labelIncome}罐头',
+                type: TransactionType.income,
+                currentAmount: provider.totalIncome,
+                targetAmount: provider.jarSettings.targetAmount,
+                color: AppConstants.incomeColor,
+                provider: provider,
+              ),
+            ],
+          ),
         ),
         
-        // 页面指示器
+        // ===== 左侧导航栏 - 与右侧同高对齐，缩小30% =====
         Positioned(
-          right: AppConstants.spacingLarge,
-          top: MediaQuery.of(context).size.height / 2 - 50,
-          child: _buildPageIndicators(),
+          left: 20,
+          top: 250, // 固定位置，适应手机屏幕
+          child: Container(
+            width: 42, // 与右侧导航栏宽度一致，缩小30%
+            padding: const EdgeInsets.symmetric(vertical: 14), // 与右侧一致的padding，缩小30%
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(21), // 缩小30%
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 7, // 缩小30%
+                  offset: const Offset(0, 1.4), // 缩小30%
+                ),
+              ],
+            ),
+            child: _buildLeftNavBar(),
+          ),
+        ),
+        
+        // ===== 右侧导航栏 - 白色字体和圆点，缩小30% =====
+        Positioned(
+          right: 20,
+          top: 250, // 固定位置，适应手机屏幕
+          child: Container(
+            width: 42, // 缩小30%：60 * 0.7 = 42
+            padding: const EdgeInsets.symmetric(vertical: 14), // 缩小30%：20 * 0.7 = 14
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(21), // 缩小30%：30 * 0.7 = 21
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 7, // 缩小30%：10 * 0.7 = 7
+                  offset: const Offset(0, 1.4), // 缩小30%：2 * 0.7 = 1.4
+                ),
+              ],
+            ),
+            child: _buildPageIndicators(),
+          ),
         ),
         
         // 输入模式覆盖层
@@ -332,13 +424,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ===== 左侧导航栏样式控制 =====
+  Widget _buildLeftNavBar() {
+    return Column(
+      children: [
+        _buildLeftNavIcon(Icons.settings),
+        const SizedBox(height: 15),
+        _buildLeftNavIcon(Icons.help_outline),
+        const SizedBox(height: 15),
+        _buildLeftNavIcon(Icons.bar_chart),
+        const SizedBox(height: 15),
+        _buildLeftNavIcon(Icons.more_horiz),
+      ],
+    );
+  }
+
+  Widget _buildLeftNavIcon(IconData icon) {
+    return GestureDetector(
+      onTap: () {
+        // 暂时没有功能，后续添加
+      },
+      child: Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Icon(
+          icon,
+          color: Colors.grey[600],
+          size: 16,
+        ),
+      ),
+    );
+  }
+
+  // ===== 右侧导航栏样式控制 =====
   Widget _buildPageIndicators() {
     return Column(
       children: [
         _buildPageIndicator(0, AppConstants.labelExpense),
-        const SizedBox(height: AppConstants.pageIndicatorSpacing),
+        const SizedBox(height: 15),
         _buildPageIndicator(1, AppConstants.labelComprehensive),
-        const SizedBox(height: AppConstants.pageIndicatorSpacing),
+        const SizedBox(height: 15),
         _buildPageIndicator(2, AppConstants.labelIncome),
       ],
     );
@@ -346,28 +475,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildPageIndicator(int index, String label) {
     final isActive = _currentPage == index;
-    return AnimatedContainer(
-      duration: AppConstants.animationFast,
+    return Container(
       child: Column(
         children: [
+          // 白色圆点
           Container(
-            width: AppConstants.pageIndicatorSize,
-            height: AppConstants.pageIndicatorSize,
+            width: 8,
+            height: 8,
             decoration: BoxDecoration(
               color: isActive 
                   ? AppConstants.primaryColor 
-                  : AppConstants.primaryColor.withOpacity(0.3),
+                  : Colors.grey.withOpacity(0.5),
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(height: AppConstants.spacingXSmall),
+          const SizedBox(height: 2),
+          // 白色字体
           Text(
             label,
-            style: AppConstants.captionStyle.copyWith(
+            style: TextStyle(
               color: isActive 
                   ? AppConstants.primaryColor 
-                  : AppConstants.primaryColor.withOpacity(0.5),
+                  : Colors.grey.withOpacity(0.7),
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              fontSize: 8,
             ),
           ),
         ],
@@ -393,98 +524,98 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        padding: const EdgeInsets.only(top: AppConstants.appBarHeight),
-        child: Stack(
-          children: [
-            MoneyJarWidget(
-              currentAmount: currentAmount,
-              targetAmount: targetAmount,
-              color: color,
-              type: type,
-              title: title,
-              isComprehensive: isComprehensive,
-              onJarTap: () => _showDetailPage(type, provider, isComprehensive),
-            ),
-            
-            // 滑动提示
-            if (!isComprehensive) 
-              _buildSwipeHint(type, color),
-          ],
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 罐头组件居中显示，占用更多空间
+              Expanded(
+                flex: 8,
+                child: Center(
+                  child: MoneyJarWidget(
+                    amount: currentAmount,
+                    type: type,
+                    title: title,
+                    onTap: () => _showDetailPage(type, provider, isComprehensive),
+                    onSettings: null,
+                  ),
+                ),
+              ),
+              
+              // 滑动提示移到底部，给罐头让出更多空间
+              if (!isComprehensive) 
+                Expanded(
+                  flex: 2,
+                  child: _buildSwipeHint(type, color),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // ===== 浮动提示样式控制 - 缩小一半大小 =====
   Widget _buildSwipeHint(TransactionType type, Color color) {
     final isExpense = type == TransactionType.expense;
     
-    return Positioned(
-      bottom: isExpense ? 200 : 50,  // 支出罐头提示往下一点，避免重叠
-      left: 0,
-      right: 0,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLarge),
       child: AnimatedBuilder(
         animation: _swipeHintAnimation,
         builder: (context, child) {
           return Opacity(
-            opacity: _swipeHintAnimation.value,
+            opacity: _swipeHintAnimation.value * 0.8,
             child: Transform.scale(
-              scale: 0.8 + (_swipeHintAnimation.value * 0.2),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(AppConstants.spacingLarge),
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(0.15),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: color.withOpacity(0.5),
-                        width: 3,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+              scale: 0.9 + (_swipeHintAnimation.value * 0.1),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingMedium, // 减小padding
+                  vertical: AppConstants.spacingSmall,    // 减小padding
+                ),
+                decoration: BoxDecoration(
+                  color: AppConstants.backgroundColor,
+                  borderRadius: BorderRadius.circular(AppConstants.radiusLarge), // 减小圆角
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05), // 减少阴影
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
                     ),
-                    child: Icon(
-                      isExpense ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
-                      color: color,
-                      size: AppConstants.iconLarge,
-                    ),
+                  ],
+                  border: Border.all(
+                    color: color.withOpacity(0.3),
+                    width: 1,
                   ),
-                  const SizedBox(height: AppConstants.spacingSmall),
-                                      Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppConstants.spacingLarge,
-                        vertical: AppConstants.spacingMedium,
-                      ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppConstants.spacingXSmall), // 减小padding
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
-                        border: Border.all(
-                          color: color.withOpacity(0.6),
-                          width: 2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: color.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        color: color.withOpacity(0.15),
+                        shape: BoxShape.circle,
                       ),
-                      child: Text(
-                        isExpense ? AppConstants.hintSwipeDown : AppConstants.hintSwipeUp,
-                        style: AppConstants.bodyStyle.copyWith(
-                          color: color,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                      child: Icon(
+                        isExpense ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                        color: color,
+                        size: AppConstants.iconSmall, // 减小图标大小
                       ),
                     ),
-                ],
+                    const SizedBox(width: AppConstants.spacingSmall), // 减小间距
+                    Text(
+                      isExpense ? AppConstants.hintSwipeDown : AppConstants.hintSwipeUp,
+                      style: AppConstants.captionStyle.copyWith( // 使用更小的字体样式
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                        fontSize: AppConstants.fontSizeSmall, // 减小字体大小
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -515,5 +646,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         });
       }
     }
+  }
+
+  // ===== 背景图片控制系统 =====
+  // 根据当前页面返回对应的背景图片
+  // 0: 支出页面 - 绿色针织背景
+  // 1: 综合页面 - 小猪背景  
+  // 2: 收入页面 - 红色针织背景
+  Widget _buildBackground() {
+    String backgroundImage;
+    switch (_currentPage) {
+      case 0: // 支出页面
+        backgroundImage = 'assets/images/green_knitted_jar.png';
+        break;
+      case 1: // 综合页面
+        backgroundImage = 'assets/images/festive_piggy_bank.png';
+        break;
+      case 2: // 收入页面
+        backgroundImage = 'assets/images/red_knitted_jar.png';
+        break;
+      default:
+        backgroundImage = 'assets/images/festive_piggy_bank.png';
+    }
+    
+    return Positioned.fill(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(backgroundImage),
+                fit: BoxFit.contain, // 保持图片完整显示，不拉伸变形
+                alignment: Alignment.bottomCenter, // 图片贴合底部
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }

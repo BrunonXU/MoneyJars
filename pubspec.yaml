@@ -49,5 +49,12 @@ flutter:
   
   # 图标和图片
   assets:
-    - assets/images/
-    - assets/icons/ 
+    - assets/images/red_knitted_jar.png
+    - assets/images/green_knitted_jar.png
+    - assets/images/piggy_bank.png  # 小猪图像（综合罐头）
+    - assets/images/festive_piggy_bank.png  # 节日小猪图像
+    - assets/images/icons-1.png  # 设置按钮图标
+    - assets/icons/v0-fargo-green-final.png
+    - assets/icons/V0-fargo-jar-final.png
+    - assets/icons/v0-fargo-jar-big.svg
+    - assets/icons/ICON.png 
