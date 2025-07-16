@@ -291,14 +291,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
                           boxShadow: AppConstants.shadowMedium,
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-                          child: Image.asset(
-                            'assets/images/piggy_bank.png',
-                            width: AppConstants.iconMedium,
-                            height: AppConstants.iconMedium,
-                            fit: BoxFit.contain,
-                          ),
+                        child: Icon(
+                          Icons.savings,
+                          size: AppConstants.iconMedium,
+                          color: AppConstants.primaryColor,
                         ),
                       ),
                     ),
@@ -324,13 +320,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildContent(TransactionProvider provider) {
+    final screenSize = MediaQuery.of(context).size;
+    final isSmallScreen = screenSize.width < 600;
+    
     return Stack(
       children: [
         // 主要内容区域 - 更大的空间分配给罐头
         Positioned(
-          top: 20, // 移除AppBar高度依赖
-          left: 80, // 为左侧导航栏预留空间
-          right: 80, // 为右侧页面指示器留空
+          top: 5, // 减少顶部间距
+          left: isSmallScreen ? 60 : 50, // 小屏幕时为导航栏预留更多空间
+          right: isSmallScreen ? 60 : 50, // 小屏幕时为页面指示器预留更多空间
           bottom: 0,
           child: PageView(
             controller: _pageController,
@@ -371,8 +370,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         
         // ===== 左侧导航栏 - 与右侧同高对齐，缩小30% =====
         Positioned(
-          left: 20,
-          top: 250, // 固定位置，适应手机屏幕
+          left: 5, // 调整位置，更贴近屏幕边缘
+          top: 230, // 稍微上移，适应更紧凑的布局
           child: Container(
             width: 42, // 与右侧导航栏宽度一致，缩小30%
             padding: const EdgeInsets.symmetric(vertical: 14), // 与右侧一致的padding，缩小30%
@@ -393,8 +392,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         
         // ===== 右侧导航栏 - 白色字体和圆点，缩小30% =====
         Positioned(
-          right: 20,
-          top: 250, // 固定位置，适应手机屏幕
+          right: 5, // 调整位置，更贴近屏幕边缘
+          top: 230, // 稍微上移，适应更紧凑的布局
           child: Container(
             width: 42, // 缩小30%：60 * 0.7 = 42
             padding: const EdgeInsets.symmetric(vertical: 14), // 缩小30%：20 * 0.7 = 14

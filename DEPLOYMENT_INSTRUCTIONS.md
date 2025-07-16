@@ -142,3 +142,43 @@ A：首次访问需要网络，之后可以离线使用。
 ---
 
 **祝您部署顺利！** 🎊 
+
+## 部署到 GitHub Pages（Web 端）
+
+### 1. 构建前 base href 必须设置为 /MoneyJars/
+
+在 web/index.html 中，base href 必须为：
+```html
+<base href="/MoneyJars/">
+```
+或者使用动态 JS 适配（推荐，模板已内置）：
+```js
+<script>
+(function() {
+  var isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  var base = document.createElement('base');
+  base.href = isLocal ? "/" : "/MoneyJars/";
+  var existingBase = document.querySelector('base');
+  if (existingBase) existingBase.remove();
+  document.head.insertBefore(base, document.head.firstChild);
+})();
+</script>
+```
+
+### 2. 构建命令
+
+务必使用如下命令：
+```bash
+flutter build web --release --base-href "/MoneyJars/" --no-tree-shake-icons
+```
+
+### 3. 404常见原因与解决办法
+- 404通常是 base href 配置错误导致，务必确认为 `/MoneyJars/`
+- 检查 GitHub Pages 设置，分支选择 main，目录为 /（root）
+- 推送后等待几分钟，GitHub Pages 需要时间同步
+- 资源加载404，优先清理浏览器缓存再刷新
+
+### 4. 资源路径和缓存问题
+- 所有静态资源路径都依赖 base href，路径不对会全部404
+- 若页面显示空白或资源404，优先检查 index.html 的 base href
+- 若本地正常、线上404，99%是 base href 或缓存问题 
