@@ -7,9 +7,18 @@ import 'screens/home_screen.dart';
 import 'constants/app_constants.dart';
 import 'widgets/common/loading_widget.dart';
 import 'widgets/common/error_widget.dart';
+import 'utils/env_check.dart';
 
 void main() {
-  runApp(const MoneyJarsApp());
+  final envResult = EnvChecker.check();
+  if (!envResult.supported) {
+    runApp(MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: EnvNotSupportedPage(reason: envResult.reason),
+    ));
+  } else {
+    runApp(const MoneyJarsApp());
+  }
 }
 
 class MoneyJarsApp extends StatelessWidget {
