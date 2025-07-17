@@ -973,19 +973,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         final screenHeight = MediaQuery.of(context).size.height; // 屏幕高度：用于尺寸计算
         final backgroundOffset = 0.0; // 背景偏移：固定为0，不跟随页面移动
         
-        // 🎨 动态背景选择：根据页面滑动进度智能切换背景图片
+        // 🎨 动态背景选择：根据页面滑动进度智能切换背景图片和背景色
         String backgroundImage;                      // 背景图片路径：动态选择的背景图片文件
+        Color backgroundColor;                       // 背景颜色：与背景图片主色调匹配的填充色
         double opacity = 1.0;                        // 背景透明度：用于平滑过渡效果
         
         if (page <= 0.5) {
           // 📍 支出页面区域 (0.0 - 0.5)：绿色针织背景占主导
           backgroundImage = 'assets/images/green_knitted_jar.png'; // 绿色针织罐头背景
+          backgroundColor = const Color(0xFF2E7D32);  // 深绿色：与绿色针织背景匹配
           if (page > 0) {
             opacity = 1.0 - (page * 2);             // 透明度渐变：page=0时opacity=1.0，page=0.5时opacity=0.0
           }
         } else if (page <= 1.5) {
           // 📍 综合页面区域 (0.5 - 1.5)：小猪背景占主导
           backgroundImage = 'assets/images/festive_piggy_bank.png'; // 节日小猪存钱罐背景
+          backgroundColor = const Color(0xFFF3E5F5);  // 浅粉色：与小猪背景匹配
           if (page < 1) {
             opacity = page * 2;                      // 淡入效果：page=0.5时opacity=1.0，page=1.0时opacity=2.0
           } else {
@@ -994,17 +997,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         } else {
           // 📍 收入页面区域 (1.5 - 2.0)：红色针织背景占主导
           backgroundImage = 'assets/images/red_knitted_jar.png'; // 红色针织罐头背景
+          backgroundColor = const Color(0xFFB71C1C);  // 深红色：与红色针织背景匹配
           opacity = (page - 1.0) * 2;                // 透明度计算：page=1.5时opacity=1.0，page=2.0时opacity=2.0
           if (opacity > 1.0) opacity = 1.0;         // 透明度限制：最大值1.0，避免过度透明
         }
         
         return Stack(                                // 🎯 层叠布局：多背景图片叠加，实现平滑过渡
           children: [
-            // 🖼️ 主要背景层：固定位置的背景图片，宽度与屏幕完全吻合
+            // 🖼️ 主要背景层：固定位置的背景图片，宽度与屏幕完全吻合，配色填充白边
             Container(
               width: double.infinity,                // 容器宽度：占满屏幕宽度
               height: double.infinity,               // 容器高度：占满屏幕高度
               decoration: BoxDecoration(
+                color: backgroundColor,              // 背景颜色：与图片主色调匹配，填充白边区域
                 image: DecorationImage(
                   image: AssetImage(backgroundImage), // 背景图片：动态选择的背景图片文件
                   fit: BoxFit.fitWidth,              // 填充模式：宽度完全匹配，高度可能裁剪
@@ -1021,6 +1026,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   width: double.infinity,            // 容器宽度：占满屏幕宽度
                   height: double.infinity,           // 容器高度：占满屏幕高度
                   decoration: BoxDecoration(
+                    color: const Color(0xFFF3E5F5),  // 浅粉色：与小猪背景匹配，填充白边区域
                     image: DecorationImage(
                       image: AssetImage('assets/images/festive_piggy_bank.png'), // 小猪背景：渐入效果
                       fit: BoxFit.fitWidth,          // 填充模式：宽度完全匹配，高度可能裁剪
@@ -1038,6 +1044,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   width: double.infinity,            // 容器宽度：占满屏幕宽度
                   height: double.infinity,           // 容器高度：占满屏幕高度
                   decoration: BoxDecoration(
+                    color: const Color(0xFFB71C1C),  // 深红色：与红色针织背景匹配，填充白边区域
                     image: DecorationImage(
                       image: AssetImage('assets/images/red_knitted_jar.png'), // 红色针织背景：渐入效果
                       fit: BoxFit.fitWidth,          // 填充模式：宽度完全匹配，高度可能裁剪
