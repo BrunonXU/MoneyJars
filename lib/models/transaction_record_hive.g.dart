@@ -169,19 +169,22 @@ class JarSettingsAdapter extends TypeAdapter<JarSettings> {
     return JarSettings()
       ..targetAmount = fields[0] as double
       ..title = fields[1] as String
-      ..updatedAt = fields[2] as DateTime;
+      ..updatedAt = fields[2] as DateTime
+      ..deadline = fields[3] as DateTime?;
   }
 
   @override
   void write(BinaryWriter writer, JarSettings obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.targetAmount)
       ..writeByte(1)
       ..write(obj.title)
       ..writeByte(2)
-      ..write(obj.updatedAt);
+      ..write(obj.updatedAt)
+      ..writeByte(3)
+      ..write(obj.deadline);
   }
 
   @override

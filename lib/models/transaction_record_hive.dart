@@ -263,12 +263,16 @@ class JarSettings extends HiveObject {
   @HiveField(2)
   late DateTime updatedAt;
 
+  @HiveField(3)
+  DateTime? deadline;
+
   JarSettings();
 
   JarSettings.create({
     required this.targetAmount,
     required this.title,
     DateTime? updatedAt,
+    this.deadline,
   }) {
     this.updatedAt = updatedAt ?? DateTime.now();
   }
@@ -278,6 +282,9 @@ class JarSettings extends HiveObject {
       targetAmount: (json['targetAmount'] as num).toDouble(),
       title: json['title'] as String,
       updatedAt: DateTime.fromMillisecondsSinceEpoch(json['updatedAt'] as int),
+      deadline: json['deadline'] != null 
+          ? DateTime.fromMillisecondsSinceEpoch(json['deadline'] as int)
+          : null,
     );
   }
 
@@ -286,6 +293,7 @@ class JarSettings extends HiveObject {
       'targetAmount': targetAmount,
       'title': title,
       'updatedAt': updatedAt.millisecondsSinceEpoch,
+      'deadline': deadline?.millisecondsSinceEpoch,
     };
   }
 }

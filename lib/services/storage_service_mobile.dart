@@ -59,7 +59,7 @@ class HiveStorageService extends StorageService {
   }
 
   @override
-  Future<TransactionRecord?> getTransaction(String id) async {
+  Future<hive.TransactionRecord?> getTransaction(String id) async {
     final box = _transactionsBox;
     if (box == null) throw StateError('HiveStorageService not initialized');
     
@@ -67,7 +67,7 @@ class HiveStorageService extends StorageService {
   }
 
   @override
-  Future<void> addTransaction(TransactionRecord transaction) async {
+  Future<void> addTransaction(hive.TransactionRecord transaction) async {
     final box = _transactionsBox;
     if (box == null) throw StateError('HiveStorageService not initialized');
     
@@ -75,7 +75,7 @@ class HiveStorageService extends StorageService {
   }
 
   @override
-  Future<void> updateTransaction(TransactionRecord transaction) async {
+  Future<void> updateTransaction(hive.TransactionRecord transaction) async {
     final box = _transactionsBox;
     if (box == null) throw StateError('HiveStorageService not initialized');
     
@@ -118,7 +118,7 @@ class HiveStorageService extends StorageService {
   // ===== 自定义分类操作 =====
 
   @override
-  Future<List<Category>> getCustomCategories() async {
+  Future<List<hive.Category>> getCustomCategories() async {
     final box = _categoriesBox;
     if (box == null) throw StateError('HiveStorageService not initialized');
     
@@ -127,7 +127,7 @@ class HiveStorageService extends StorageService {
   }
 
   @override
-  Future<void> addCustomCategory(Category category) async {
+  Future<void> addCustomCategory(hive.Category category) async {
     final box = _categoriesBox;
     if (box == null) throw StateError('HiveStorageService not initialized');
     
@@ -135,7 +135,7 @@ class HiveStorageService extends StorageService {
   }
 
   @override
-  Future<void> updateCustomCategory(Category category) async {
+  Future<void> updateCustomCategory(hive.Category category) async {
     final box = _categoriesBox;
     if (box == null) throw StateError('HiveStorageService not initialized');
     
@@ -157,7 +157,7 @@ class HiveStorageService extends StorageService {
   // ===== 罐头设置操作 =====
 
   @override
-  Future<JarSettings?> getJarSettings() async {
+  Future<hive.JarSettings?> getJarSettings() async {
     final box = _settingsBox;
     if (box == null) throw StateError('HiveStorageService not initialized');
     
@@ -165,7 +165,7 @@ class HiveStorageService extends StorageService {
   }
 
   @override
-  Future<void> saveJarSettings(JarSettings settings) async {
+  Future<void> saveJarSettings(hive.JarSettings settings) async {
     final box = _settingsBox;
     if (box == null) throw StateError('HiveStorageService not initialized');
     
@@ -201,7 +201,7 @@ class HiveStorageService extends StorageService {
     final transactionsData = data['transactions'] as List?;
     if (transactionsData != null) {
       for (final transactionJson in transactionsData) {
-        final transaction = TransactionRecord.fromJson(transactionJson as Map<String, dynamic>);
+        final transaction = hive.TransactionRecord.fromJson(transactionJson as Map<String, dynamic>);
         await addTransaction(transaction);
       }
     }
@@ -210,7 +210,7 @@ class HiveStorageService extends StorageService {
     final categoriesData = data['categories'] as List?;
     if (categoriesData != null) {
       for (final categoryJson in categoriesData) {
-        final category = Category.fromJson(categoryJson as Map<String, dynamic>);
+        final category = hive.Category.fromJson(categoryJson as Map<String, dynamic>);
         await addCustomCategory(category);
       }
     }
@@ -218,7 +218,7 @@ class HiveStorageService extends StorageService {
     // 导入设置
     final settingsData = data['settings'] as Map<String, dynamic>?;
     if (settingsData != null) {
-      final settings = JarSettings.fromJson(settingsData);
+      final settings = hive.JarSettings.fromJson(settingsData);
       await saveJarSettings(settings);
     }
   }

@@ -18,7 +18,8 @@
       "Bash(rm:*)",
       "Bash(flutter packages pub run:*)",
       "Bash(dart run:*)",
-      "Bash(dart compile:*)"
+      "Bash(dart compile:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }

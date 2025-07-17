@@ -44,12 +44,12 @@ class TransactionProvider extends ChangeNotifier {
       : 0.0;
 
   // 获取所有分类 (预定义 + 自定义)
-  List<Category> getAllCategories(TransactionType type) {
-    List<Category> defaultCategories = type == TransactionType.income 
-        ? DefaultCategories.incomeCategories 
-        : DefaultCategories.expenseCategories;
+  List<hive.Category> getAllCategories(hive.TransactionType type) {
+    List<hive.Category> defaultCategories = type == hive.TransactionType.income 
+        ? hive.DefaultCategories.incomeCategories 
+        : hive.DefaultCategories.expenseCategories;
     
-    List<Category> typeCustomCategories = _customCategories
+    List<hive.Category> typeCustomCategories = _customCategories
         .where((c) => c.type == type)
         .toList();
 
@@ -57,7 +57,7 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   // 获取指定大类别的子分类
-  List<SubCategory> getSubCategories(String parentCategoryName, TransactionType type) {
+  List<hive.SubCategory> getSubCategories(String parentCategoryName, hive.TransactionType type) {
     final allCategories = getAllCategories(type);
     final parentCategory = allCategories.firstWhere(
       (cat) => cat.name == parentCategoryName,
@@ -67,8 +67,8 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   // 根据分类计算统计数据
-  Map<String, double> getCategoryStats(TransactionType type) {
-    List<TransactionRecord> records = type == TransactionType.income 
+  Map<String, double> getCategoryStats(hive.TransactionType type) {
+    List<hive.TransactionRecord> records = type == hive.TransactionType.income 
         ? incomeRecords 
         : expenseRecords;
 
@@ -80,8 +80,8 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   // 根据子分类计算统计数据
-  Map<String, double> getSubCategoryStats(String parentCategory, TransactionType type) {
-    List<TransactionRecord> records = type == TransactionType.income 
+  Map<String, double> getSubCategoryStats(String parentCategory, hive.TransactionType type) {
+    List<hive.TransactionRecord> records = type == hive.TransactionType.income 
         ? incomeRecords 
         : expenseRecords;
 
@@ -134,7 +134,7 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   // 添加交易记录
-  Future<void> addTransaction(TransactionRecord transaction) async {
+  Future<void> addTransaction(hive.TransactionRecord transaction) async {
     try {
       await _storageService.addTransaction(transaction);
       _transactions.add(transaction);
@@ -146,7 +146,7 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   // 更新交易记录
-  Future<void> updateTransaction(TransactionRecord transaction) async {
+  Future<void> updateTransaction(hive.TransactionRecord transaction) async {
     try {
       await _storageService.updateTransaction(transaction);
       final index = _transactions.indexWhere((t) => t.id == transaction.id);
@@ -173,7 +173,7 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   // 添加自定义分类
-  Future<void> addCustomCategory(Category category) async {
+  Future<void> addCustomCategory(hive.Category category) async {
     try {
       await _storageService.addCustomCategory(category);
       _customCategories.add(category);
@@ -185,7 +185,7 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   // 添加子分类到现有分类
-  Future<void> addSubCategoryToExisting(String parentCategoryName, TransactionType type, SubCategory subCategory) async {
+  Future<void> addSubCategoryToExisting(String parentCategoryName, hive.TransactionType type, hive.SubCategory subCategory) async {
     try {
       // 查找现有分类
       final categoryIndex = _customCategories.indexWhere(
@@ -194,7 +194,7 @@ class TransactionProvider extends ChangeNotifier {
       
       if (categoryIndex != -1) {
         // 更新现有自定义分类
-        final updatedCategory = Category.create(
+        final updatedCategory = hive.Category.create(
           id: _customCategories[categoryIndex].id,
           name: _customCategories[categoryIndex].name,
           color: _customCategories[categoryIndex].color,
@@ -207,16 +207,16 @@ class TransactionProvider extends ChangeNotifier {
         _customCategories[categoryIndex] = updatedCategory;
       } else {
         // 检查是否是默认分类，如果是，创建自定义版本
-        final defaultCategories = type == TransactionType.income 
-            ? DefaultCategories.incomeCategories 
-            : DefaultCategories.expenseCategories;
+        final defaultCategories = type == hive.TransactionType.income 
+            ? hive.DefaultCategories.incomeCategories 
+            : hive.DefaultCategories.expenseCategories;
         
         final defaultCategory = defaultCategories.firstWhere(
           (cat) => cat.name == parentCategoryName,
           orElse: () => throw Exception('分类不存在'),
         );
         
-        final newCategory = Category.create(
+        final newCategory = hive.Category.create(
           id: 'custom_${defaultCategory.id}',
           name: defaultCategory.name,
           color: defaultCategory.color,
@@ -236,7 +236,7 @@ class TransactionProvider extends ChangeNotifier {
   }
 
   // 更新罐头设置
-  Future<void> updateJarSettings(JarSettings settings) async {
+  Future<void> updateJarSettings(hive.JarSettings settings) async {
     try {
       await _storageService.saveJarSettings(settings);
       _jarSettings = settings;
@@ -265,7 +265,7 @@ class TransactionProvider extends ChangeNotifier {
       await _storageService.clearTransactions();
       _transactions.clear();
       _customCategories.clear();
-      _jarSettings = JarSettings.create(targetAmount: 1000.0, title: '我的储蓄罐');
+      _jarSettings = hive.JarSettings.create(targetAmount: 1000.0, title: '我的储蓄罐');
       notifyListeners();
     } catch (e) {
       debugPrint('清空数据失败: $e');

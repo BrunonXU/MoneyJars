@@ -2,8 +2,9 @@ import 'package:flutter/foundation.dart';
 import '../models/transaction_record_hive.dart' hide Category;
 import '../models/transaction_record_hive.dart' as hive;
 
-// 条件导入：Web平台使用localStorage，其他平台使用Hive
-import 'storage_service_web.dart' if (dart.library.io) 'storage_service_mobile.dart';
+// 导入所有实现
+import 'storage_service_web.dart';
+import 'storage_service_mobile.dart';
 
 /// 📦 抽象存储服务接口
 /// 

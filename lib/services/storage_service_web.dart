@@ -1,6 +1,6 @@
 import 'dart:html' as html;
 import 'dart:convert';
-import '../models/transaction_record_hive.dart';
+import '../models/transaction_record_hive.dart' as hive;
 import 'storage_service.dart';
 
 /// 🌐 Web存储服务实现（localStorage）
@@ -30,14 +30,14 @@ class WebStorageService extends StorageService {
   // ===== 交易记录操作 =====
 
   @override
-  Future<List<TransactionRecord>> getTransactions() async {
+  Future<List<hive.TransactionRecord>> getTransactions() async {
     final dataStr = _localStorage[_transactionsKey];
     if (dataStr == null || dataStr.isEmpty) return [];
     
     try {
       final List<dynamic> dataList = json.decode(dataStr);
       final transactions = dataList
-          .map((json) => TransactionRecord.fromJson(json as Map<String, dynamic>))
+          .map((json) => hive.TransactionRecord.fromJson(json as Map<String, dynamic>))
           .where((record) => !record.isArchived)
           .toList();
       
@@ -50,7 +50,7 @@ class WebStorageService extends StorageService {
   }
 
   @override
-  Future<TransactionRecord?> getTransaction(String id) async {
+  Future<hive.TransactionRecord?> getTransaction(String id) async {
     final transactions = await getTransactions();
     try {
       return transactions.where((record) => record.id == id).first;
@@ -60,14 +60,14 @@ class WebStorageService extends StorageService {
   }
 
   @override
-  Future<void> addTransaction(TransactionRecord transaction) async {
+  Future<void> addTransaction(hive.TransactionRecord transaction) async {
     final transactions = await getTransactions();
     transactions.add(transaction);
     await _saveTransactions(transactions);
   }
 
   @override
-  Future<void> updateTransaction(TransactionRecord transaction) async {
+  Future<void> updateTransaction(hive.TransactionRecord transaction) async {
     final transactions = await getTransactions();
     transaction.updatedAt = DateTime.now();
     
@@ -97,7 +97,7 @@ class WebStorageService extends StorageService {
     _localStorage.remove(_transactionsKey);
   }
 
-  Future<void> _saveTransactions(List<TransactionRecord> transactions) async {
+  Future<void> _saveTransactions(List<hive.TransactionRecord> transactions) async {
     final jsonList = transactions.map((t) => t.toJson()).toList();
     _localStorage[_transactionsKey] = json.encode(jsonList);
   }
@@ -105,14 +105,14 @@ class WebStorageService extends StorageService {
   // ===== 自定义分类操作 =====
 
   @override
-  Future<List<Category>> getCustomCategories() async {
+  Future<List<hive.Category>> getCustomCategories() async {
     final dataStr = _localStorage[_categoriesKey];
     if (dataStr == null || dataStr.isEmpty) return [];
     
     try {
       final List<dynamic> dataList = json.decode(dataStr);
       final categories = dataList
-          .map((json) => Category.fromJson(json as Map<String, dynamic>))
+          .map((json) => hive.Category.fromJson(json as Map<String, dynamic>))
           .toList();
       
       categories.sort((a, b) => a.name.compareTo(b.name));
@@ -124,14 +124,14 @@ class WebStorageService extends StorageService {
   }
 
   @override
-  Future<void> addCustomCategory(Category category) async {
+  Future<void> addCustomCategory(hive.Category category) async {
     final categories = await getCustomCategories();
     categories.add(category);
     await _saveCategories(categories);
   }
 
   @override
-  Future<void> updateCustomCategory(Category category) async {
+  Future<void> updateCustomCategory(hive.Category category) async {
     final categories = await getCustomCategories();
     category.updatedAt = DateTime.now();
     
@@ -149,7 +149,7 @@ class WebStorageService extends StorageService {
     await _saveCategories(categories);
   }
 
-  Future<void> _saveCategories(List<Category> categories) async {
+  Future<void> _saveCategories(List<hive.Category> categories) async {
     final jsonList = categories.map((c) => c.toJson()).toList();
     _localStorage[_categoriesKey] = json.encode(jsonList);
   }
@@ -157,13 +157,13 @@ class WebStorageService extends StorageService {
   // ===== 罐头设置操作 =====
 
   @override
-  Future<JarSettings?> getJarSettings() async {
+  Future<hive.JarSettings?> getJarSettings() async {
     final dataStr = _localStorage[_settingsKey];
     if (dataStr == null || dataStr.isEmpty) return null;
     
     try {
       final json = jsonDecode(dataStr) as Map<String, dynamic>;
-      return JarSettings.fromJson(json);
+      return hive.JarSettings.fromJson(json);
     } catch (e) {
       print('Error parsing settings from localStorage: $e');
       return null;
@@ -171,7 +171,7 @@ class WebStorageService extends StorageService {
   }
 
   @override
-  Future<void> saveJarSettings(JarSettings settings) async {
+  Future<void> saveJarSettings(hive.JarSettings settings) async {
     _localStorage[_settingsKey] = json.encode(settings.toJson());
   }
 
@@ -203,7 +203,7 @@ class WebStorageService extends StorageService {
     final transactionsData = data['transactions'] as List?;
     if (transactionsData != null) {
       final transactions = transactionsData
-          .map((json) => TransactionRecord.fromJson(json as Map<String, dynamic>))
+          .map((json) => hive.TransactionRecord.fromJson(json as Map<String, dynamic>))
           .toList();
       await _saveTransactions(transactions);
     }
@@ -212,7 +212,7 @@ class WebStorageService extends StorageService {
     final categoriesData = data['categories'] as List?;
     if (categoriesData != null) {
       final categories = categoriesData
-          .map((json) => Category.fromJson(json as Map<String, dynamic>))
+          .map((json) => hive.Category.fromJson(json as Map<String, dynamic>))
           .toList();
       await _saveCategories(categories);
     }
@@ -220,7 +220,7 @@ class WebStorageService extends StorageService {
     // 导入设置
     final settingsData = data['settings'] as Map<String, dynamic>?;
     if (settingsData != null) {
-      final settings = JarSettings.fromJson(settingsData);
+      final settings = hive.JarSettings.fromJson(settingsData);
       await saveJarSettings(settings);
     }
   }
