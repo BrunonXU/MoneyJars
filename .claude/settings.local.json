@@ -20,7 +20,8 @@
       "Bash(dart run:*)",
       "Bash(dart compile:*)",
       "Bash(git reset:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(flutter:*)"
     ],
     "deny": []
   }

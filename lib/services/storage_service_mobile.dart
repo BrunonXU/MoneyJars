@@ -2,6 +2,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/transaction_record_hive.dart' as hive;
 import 'storage_service.dart';
 
+/// 平台特定的存储服务实现选择器（移动端）
+StorageService createStorageService() => HiveStorageService();
+
 /// 📱 Hive存储服务实现（移动端）
 class HiveStorageService extends StorageService {
   static const String _transactionsBoxName = 'transactions';

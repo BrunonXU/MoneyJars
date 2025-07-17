@@ -2,9 +2,10 @@ import 'package:flutter/foundation.dart';
 import '../models/transaction_record_hive.dart' hide Category;
 import '../models/transaction_record_hive.dart' as hive;
 
-// 导入所有实现
-import 'storage_service_web.dart';
-import 'storage_service_mobile.dart';
+// 条件导入：只在需要的平台导入对应实现
+import 'storage_service_stub.dart'
+    if (dart.library.io) 'storage_service_mobile.dart'
+    if (dart.library.html) 'storage_service_web.dart';
 
 /// 📦 抽象存储服务接口
 /// 
@@ -84,12 +85,7 @@ class StorageServiceFactory {
   static StorageService getInstance() {
     if (_instance != null) return _instance!;
 
-    if (kIsWeb) {
-      _instance = WebStorageService();
-    } else {
-      _instance = HiveStorageService();
-    }
-
+    _instance = createStorageService();
     return _instance!;
   }
 
