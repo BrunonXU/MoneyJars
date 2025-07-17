@@ -357,11 +357,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           children: [
             _buildAppBar(),                      // 📱 顶部导航栏：设置按钮 + MoneyJars标题
             Expanded(
-              child: Stack(                      // 🎨 主内容区域：背景层 + 内容层的层叠结构
-                children: [
-                  _buildBackground(),            // 🎨 背景图片层：动态三张背景图，支持透明度过渡
-                  _buildMobileContent(),         // 📄 移动端内容层：PageView + 导航栏 + 提示区域
-                ],
+              child: ClipRect(                   // 🎨 裁剪背景：确保背景不会溢出到AppBar区域
+                child: Stack(                    // 🎨 主内容区域：背景层 + 内容层的层叠结构
+                  children: [
+                    _buildBackground(),          // 🎨 背景图片层：动态三张背景图，支持透明度过渡
+                    _buildMobileContent(),       // 📄 移动端内容层：PageView + 导航栏 + 提示区域
+                  ],
+                ),
               ),
             ),
           ],
@@ -402,11 +404,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             children: [
               _buildAppBar(),                        // 📱 顶部导航栏：与移动端相同的导航栏
               Expanded(
-                child: Stack(                        // 🎨 主内容区域：背景层 + 内容层的层叠结构
-                  children: [
-                    _buildBackground(),              // 🎨 背景图片层：与移动端相同的动态背景
-                    _buildTabletContent(),           // 📄 平板端内容层：水平布局显示三个罐头
-                  ],
+                child: ClipRect(                     // 🎨 裁剪背景：确保背景不会溢出到AppBar区域
+                  child: Stack(                      // 🎨 主内容区域：背景层 + 内容层的层叠结构
+                    children: [
+                      _buildBackground(),            // 🎨 背景图片层：与移动端相同的动态背景
+                      _buildTabletContent(),         // 📄 平板端内容层：水平布局显示三个罐头
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -448,11 +452,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             children: [
               _buildAppBar(),                        // 📱 顶部导航栏：与其他端相同的导航栏
               Expanded(
-                child: Stack(                        // 🎨 主内容区域：背景层 + 内容层的层叠结构
-                  children: [
-                    _buildBackground(),              // 🎨 背景图片层：与其他端相同的动态背景
-                    _buildDesktopContent(),          // 📄 桌面端内容层：网格布局显示所有罐头
-                  ],
+                child: ClipRect(                     // 🎨 裁剪背景：确保背景不会溢出到AppBar区域
+                  child: Stack(                      // 🎨 主内容区域：背景层 + 内容层的层叠结构
+                    children: [
+                      _buildBackground(),            // 🎨 背景图片层：与其他端相同的动态背景
+                      _buildDesktopContent(),        // 📄 桌面端内容层：网格布局显示所有罐头
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -965,7 +971,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         
         // 🎯 背景跟随计算：背景图片垂直偏移量，与页面滚动同步
         final screenHeight = MediaQuery.of(context).size.height; // 屏幕高度：用于偏移计算
-        final backgroundOffset = (page - 1.0) * 50.h; // 背景偏移：跟随页面滚动，减少偏移量避免错位
+        double backgroundOffset = (page - 1.0) * 30.h; // 背景偏移：跟随页面滚动，减少偏移量
+        // 🚫 限制背景偏移范围：确保背景不会向上移动到AppBar区域
+        backgroundOffset = backgroundOffset.clamp(-20.h, 20.h); // 限制偏移范围在±20逻辑像素内
         
         // 🎨 动态背景选择：根据页面滑动进度智能切换背景图片
         String backgroundImage;                      // 背景图片路径：动态选择的背景图片文件
