@@ -22,7 +22,7 @@ jobs:
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.16.0'
+        flutter-version: '3.32.5'
         channel: 'stable'
     
     - name: Install dependencies
@@ -33,6 +33,15 @@ jobs:
     
     - name: Build Web
       run: flutter build web --release --no-tree-shake-icons --base-href="/MoneyJars/"
+    
+    - name: List build output
+      run: ls -la build/web/
+    
+    - name: Verify critical files
+      run: |
+        test -f build/web/flutter_bootstrap.js && echo "✅ flutter_bootstrap.js exists" || echo "❌ flutter_bootstrap.js missing"
+        test -f build/web/main.dart.js && echo "✅ main.dart.js exists" || echo "❌ main.dart.js missing"
+        wc -c build/web/flutter_bootstrap.js
     
     - name: Setup Pages
       uses: actions/configure-pages@v4
