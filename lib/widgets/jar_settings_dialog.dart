@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../models/transaction_record.dart';
+import '../models/transaction_record_hive.dart';
 import '../providers/transaction_provider.dart';
 
 class JarSettingsDialog extends StatefulWidget {
@@ -156,7 +156,7 @@ class _JarSettingsDialogState extends State<JarSettingsDialog> {
     if (_formKey.currentState!.validate()) {
       final provider = Provider.of<TransactionProvider>(context, listen: false);
       
-      final newSettings = JarSettings(
+      final newSettings = JarSettings.create(
         title: _titleController.text.trim(),
         targetAmount: double.parse(_targetAmountController.text),
         deadline: _selectedDeadline,

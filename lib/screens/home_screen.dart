@@ -50,7 +50,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../providers/transaction_provider.dart';
-import '../models/transaction_record.dart';
+import '../models/transaction_record_hive.dart';
 import '../widgets/money_jar_widget.dart';
 import '../widgets/enhanced_transaction_input.dart';
 import '../widgets/jar_settings_dialog.dart';

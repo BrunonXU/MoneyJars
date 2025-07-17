@@ -17,7 +17,7 @@ import 'package:flutter/services.dart';
 import 'dart:ui' as ui;
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
-import '../models/transaction_record.dart';
+import '../models/transaction_record_hive.dart';
 import '../providers/transaction_provider.dart';
 import '../constants/app_constants.dart';
 import 'enhanced_pie_chart.dart';
@@ -653,7 +653,7 @@ class _DragRecordInputState extends State<DragRecordInput>
   void _completeRecord(String parentCategory, String? subCategory) {
     final provider = Provider.of<TransactionProvider>(context, listen: false);
     
-    final record = TransactionRecord(
+    final record = TransactionRecord.create(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       amount: widget.amount,
       type: widget.type,
@@ -1364,16 +1364,16 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
       final provider = Provider.of<TransactionProvider>(context, listen: false);
       
       // 创建新的分类
-      final category = Category(
+      final category = Category.create(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
-        color: AppConstants.categoryColors[0],
-        icon: Icons.category,
+        color: AppConstants.categoryColors[0].value,
+        icon: Icons.category.codePoint.toString(),
         type: widget.type,
         subCategories: [
-          SubCategory(
+          SubCategory.create(
             name: 'default',
-            color: AppConstants.categoryColors[0],
-            icon: Icons.category,
+            icon: Icons.category.codePoint.toString(),
           ),
         ],
       );

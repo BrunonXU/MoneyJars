@@ -18,7 +18,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../constants/app_constants.dart';
-import '../models/transaction_record.dart';
+import '../models/transaction_record_hive.dart';
 import '../providers/transaction_provider.dart';
 import '../widgets/common/error_widget.dart';
 import '../widgets/common/loading_widget.dart';

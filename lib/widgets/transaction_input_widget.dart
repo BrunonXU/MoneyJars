@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/transaction_record.dart';
+import '../models/transaction_record_hive.dart';
 
 class TransactionInputWidget extends StatefulWidget {
   final TransactionType type;
@@ -303,19 +303,21 @@ class _TransactionInputWidgetState extends State<TransactionInputWidget>
                   child: Container(
                     width: 70,
                     decoration: BoxDecoration(
-                      color: isSelected ? category.color : Colors.grey[200],
+                      color: isSelected ? Color(category.color) : Colors.grey[200],
                       borderRadius: BorderRadius.circular(12),
                       border: isSelected 
-                          ? Border.all(color: category.color, width: 2)
+                          ? Border.all(color: Color(category.color), width: 2)
                           : null,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        Text(
                           category.icon,
-                          color: isSelected ? Colors.white : Colors.grey[600],
-                          size: 24,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.grey[600],
+                            fontSize: 24,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(

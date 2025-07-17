@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/transaction_record.dart';
+import '../models/transaction_record_hive.dart';
 import '../widgets/drag_record_input.dart';
 import '../constants/app_constants.dart';
 
