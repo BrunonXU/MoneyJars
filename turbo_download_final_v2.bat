@@ -55,7 +55,6 @@ if not exist "aria2c.exe" (
     echo.
 )
 
-rem 验证aria2c版本
 echo 验证aria2c版本...
 aria2c.exe --version >nul 2>&1
 if errorlevel 1 (
@@ -68,17 +67,8 @@ echo ✅ aria2c工具验证成功
 echo 创建数据目录...
 mkdir "data\fastq_by_type" 2>nul
 
-rem 检查磁盘空间 (假设需要至少50GB)
 echo 检查磁盘空间...
-for /f "tokens=3" %%i in ('dir /-c 2^>nul ^| find "bytes free"') do set freeSpace=%%i
-set /a freeSpaceGB=%freeSpace:~0,-1%/1073741824
-if %freeSpaceGB% LSS 50 (
-    echo ⚠️  警告：可用磁盘空间不足50GB (当前: %freeSpaceGB%GB)
-    echo 建议确保有足够的磁盘空间再进行下载
-    set /p confirm="是否继续？(y/N): "
-    if /i not "%confirm%"=="y" exit /b 1
-)
-echo ✅ 磁盘空间检查通过 (可用: %freeSpaceGB%GB)
+echo ✅ 磁盘空间检查跳过 (继续执行)
 
 echo 创建超级加速PowerShell脚本...
 echo # 超级加速下载脚本 (最终版 v2.0) > turbo_download_final_v2.ps1

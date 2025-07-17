@@ -969,11 +969,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           page = _pageController.page!;              // 获取当前页面：实时滚动进度(0.0-2.0)
         }
         
-        // 🎯 背景跟随计算：背景图片垂直偏移量，与页面滚动同步
-        final screenHeight = MediaQuery.of(context).size.height; // 屏幕高度：用于偏移计算
-        double backgroundOffset = (page - 1.0) * 30.h; // 背景偏移：跟随页面滚动，减少偏移量
-        // 🚫 限制背景偏移范围：确保背景不会向上移动到AppBar区域
-        backgroundOffset = backgroundOffset.clamp(-20.h, 20.h); // 限制偏移范围在±20逻辑像素内
+        // 🎯 背景固定：禁用背景跟随移动，保持背景图片固定位置
+        final screenHeight = MediaQuery.of(context).size.height; // 屏幕高度：用于尺寸计算
+        final backgroundOffset = 0.0; // 背景偏移：固定为0，不跟随页面移动
         
         // 🎨 动态背景选择：根据页面滑动进度智能切换背景图片
         String backgroundImage;                      // 背景图片路径：动态选择的背景图片文件
@@ -1002,37 +1000,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         
         return Stack(                                // 🎯 层叠布局：多背景图片叠加，实现平滑过渡
           children: [
-            // 🖼️ 主要背景层：当前页面对应的背景图片，支持垂直偏移跟随
-            Transform.translate(
-              offset: Offset(0, backgroundOffset),   // 垂直偏移：背景图片跟随页面滚动移动
-              child: Container(
-                width: double.infinity,              // 容器宽度：占满屏幕宽度
-                height: double.infinity,             // 容器高度：占满屏幕高度
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(backgroundImage), // 背景图片：动态选择的背景图片文件
-                    fit: BoxFit.cover,               // 填充模式：覆盖整个容器，保持比例
-                    alignment: Alignment.center,     // 对齐方式：居中对齐
-                  ),
+            // 🖼️ 主要背景层：固定位置的背景图片，宽度与屏幕完全吻合
+            Container(
+              width: double.infinity,                // 容器宽度：占满屏幕宽度
+              height: double.infinity,               // 容器高度：占满屏幕高度
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(backgroundImage), // 背景图片：动态选择的背景图片文件
+                  fit: BoxFit.fitWidth,              // 填充模式：宽度完全匹配，高度可能裁剪
+                  alignment: Alignment.center,       // 对齐方式：居中对齐
                 ),
               ),
             ),
             
             // 🌅 过渡背景层1：支出→综合页面过渡 (0.5 < page < 1.0)
             if (page > 0.5 && page < 1.0)           // 条件渲染：仅在支出和综合页面之间显示
-              Transform.translate(
-                offset: Offset(0, backgroundOffset), // 同步偏移：与主背景保持相同的移动
-                child: Opacity(
-                  opacity: (page - 0.5) * 2,        // 渐变透明度：page=0.5时opacity=0，page=1.0时opacity=1
-                  child: Container(
-                    width: double.infinity,          // 容器宽度：占满屏幕宽度
-                    height: double.infinity,         // 容器高度：占满屏幕高度
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/festive_piggy_bank.png'), // 小猪背景：渐入效果
-                        fit: BoxFit.cover,           // 填充模式：覆盖整个容器
-                        alignment: Alignment.center, // 对齐方式：居中对齐
-                      ),
+              Opacity(
+                opacity: (page - 0.5) * 2,          // 渐变透明度：page=0.5时opacity=0，page=1.0时opacity=1
+                child: Container(
+                  width: double.infinity,            // 容器宽度：占满屏幕宽度
+                  height: double.infinity,           // 容器高度：占满屏幕高度
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/festive_piggy_bank.png'), // 小猪背景：渐入效果
+                      fit: BoxFit.fitWidth,          // 填充模式：宽度完全匹配，高度可能裁剪
+                      alignment: Alignment.center,   // 对齐方式：居中对齐
                     ),
                   ),
                 ),
@@ -1040,19 +1032,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             
             // 🌅 过渡背景层2：综合→收入页面过渡 (1.0 < page < 1.5)
             if (page > 1.0 && page < 1.5)           // 条件渲染：仅在综合和收入页面之间显示
-              Transform.translate(
-                offset: Offset(0, backgroundOffset), // 同步偏移：与主背景保持相同的移动
-                child: Opacity(
-                  opacity: (page - 1.0) * 2,        // 渐变透明度：page=1.0时opacity=0，page=1.5时opacity=1
-                  child: Container(
-                    width: double.infinity,          // 容器宽度：占满屏幕宽度
-                    height: double.infinity,         // 容器高度：占满屏幕高度
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/red_knitted_jar.png'), // 红色针织背景：渐入效果
-                        fit: BoxFit.cover,           // 填充模式：覆盖整个容器
-                        alignment: Alignment.center, // 对齐方式：居中对齐
-                      ),
+              Opacity(
+                opacity: (page - 1.0) * 2,          // 渐变透明度：page=1.0时opacity=0，page=1.5时opacity=1
+                child: Container(
+                  width: double.infinity,            // 容器宽度：占满屏幕宽度
+                  height: double.infinity,           // 容器高度：占满屏幕高度
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/red_knitted_jar.png'), // 红色针织背景：渐入效果
+                      fit: BoxFit.fitWidth,          // 填充模式：宽度完全匹配，高度可能裁剪
+                      alignment: Alignment.center,   // 对齐方式：居中对齐
                     ),
                   ),
                 ),
