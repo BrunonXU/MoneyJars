@@ -25,7 +25,8 @@
       "WebFetch(domain:brunonxu.github.io)",
       "WebFetch(domain:brunonxu.github.io)",
       "Bash(curl:*)",
-      "Bash(gh run list:*)"
+      "Bash(gh run list:*)",
+      "Bash(wc:*)"
     ],
     "deny": []
   }
