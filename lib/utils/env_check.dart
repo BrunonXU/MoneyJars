@@ -12,7 +12,7 @@ class EnvChecker {
   /// 检查所有关键特性
   static EnvCheckResult check() {
     // 1. 检查 IndexedDB
-    if (!html.window.indexedDB.supported) {
+    if (html.window.indexedDB == null) {
       return EnvCheckResult(false, reason: 'IndexedDB 不支持');
     }
     // 2. 检查 localStorage/sessionStorage
