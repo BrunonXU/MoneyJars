@@ -1,33 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
-import '../models/transaction_record.dart';
-import '../services/database_service.dart';
+import '../models/transaction_record_hive.dart' as hive;
+import '../services/storage_service.dart';
 
 class TransactionProvider extends ChangeNotifier {
-  final DatabaseService _databaseService = DatabaseService.create();
+  final StorageService _storageService = StorageServiceFactory.getInstance();
   
-  List<TransactionRecord> _transactions = [];
-  List<Category> _customCategories = [];
-  JarSettings _jarSettings = JarSettings(
+  List<hive.TransactionRecord> _transactions = [];
+  List<hive.Category> _customCategories = [];
+  hive.JarSettings _jarSettings = hive.JarSettings.create(
     targetAmount: 1000.0,
     title: '我的储蓄罐',
   );
 
   // Getters
-  List<TransactionRecord> get transactions => _transactions;
-  List<Category> get customCategories => _customCategories;
-  JarSettings get jarSettings => _jarSettings;
+  List<hive.TransactionRecord> get transactions => _transactions;
+  List<hive.Category> get customCategories => _customCategories;
+  hive.JarSettings get jarSettings => _jarSettings;
 
   // 获取收入记录
-  List<TransactionRecord> get incomeRecords => 
-      _transactions.where((t) => t.type == TransactionType.income).toList();
+  List<hive.TransactionRecord> get incomeRecords => 
+      _transactions.where((t) => t.type == hive.TransactionType.income).toList();
 
   // 获取支出记录
-  List<TransactionRecord> get expenseRecords => 
-      _transactions.where((t) => t.type == TransactionType.expense).toList();
+  List<hive.TransactionRecord> get expenseRecords => 
+      _transactions.where((t) => t.type == hive.TransactionType.expense).toList();
 
   // 获取未归档的记录
-  List<TransactionRecord> get unArchivedRecords => 
+  List<hive.TransactionRecord> get unArchivedRecords => 
       _transactions.where((t) => !t.isArchived).toList();
 
   // 计算总收入
@@ -95,7 +94,7 @@ class TransactionProvider extends ChangeNotifier {
 
   // 初始化数据
   Future<void> initializeData() async {
-    await _databaseService.initDatabase();
+    await _storageService.initialize();
     await _loadTransactions();
     await _loadCustomCategories();
     await _loadJarSettings();
@@ -104,7 +103,7 @@ class TransactionProvider extends ChangeNotifier {
   // 加载交易记录
   Future<void> _loadTransactions() async {
     try {
-      _transactions = await _databaseService.getTransactions();
+      _transactions = await _storageService.getTransactions();
       notifyListeners();
     } catch (e) {
       debugPrint('加载交易记录失败: $e');
@@ -114,7 +113,7 @@ class TransactionProvider extends ChangeNotifier {
   // 加载自定义分类
   Future<void> _loadCustomCategories() async {
     try {
-      _customCategories = await _databaseService.getCustomCategories();
+      _customCategories = await _storageService.getCustomCategories();
       notifyListeners();
     } catch (e) {
       debugPrint('加载自定义分类失败: $e');
@@ -124,7 +123,7 @@ class TransactionProvider extends ChangeNotifier {
   // 加载罐头设置
   Future<void> _loadJarSettings() async {
     try {
-      final settings = await _databaseService.getJarSettings();
+      final settings = await _storageService.getJarSettings();
       if (settings != null) {
         _jarSettings = settings;
         notifyListeners();
@@ -137,7 +136,7 @@ class TransactionProvider extends ChangeNotifier {
   // 添加交易记录
   Future<void> addTransaction(TransactionRecord transaction) async {
     try {
-      await _databaseService.insertTransaction(transaction);
+      await _storageService.addTransaction(transaction);
       _transactions.add(transaction);
       notifyListeners();
     } catch (e) {
@@ -149,7 +148,7 @@ class TransactionProvider extends ChangeNotifier {
   // 更新交易记录
   Future<void> updateTransaction(TransactionRecord transaction) async {
     try {
-      await _databaseService.updateTransaction(transaction);
+      await _storageService.updateTransaction(transaction);
       final index = _transactions.indexWhere((t) => t.id == transaction.id);
       if (index != -1) {
         _transactions[index] = transaction;
@@ -164,7 +163,7 @@ class TransactionProvider extends ChangeNotifier {
   // 删除交易记录
   Future<void> deleteTransaction(String id) async {
     try {
-      await _databaseService.deleteTransaction(id);
+      await _storageService.deleteTransaction(id);
       _transactions.removeWhere((t) => t.id == id);
       notifyListeners();
     } catch (e) {
@@ -176,7 +175,7 @@ class TransactionProvider extends ChangeNotifier {
   // 添加自定义分类
   Future<void> addCustomCategory(Category category) async {
     try {
-      await _databaseService.insertCustomCategory(category);
+      await _storageService.addCustomCategory(category);
       _customCategories.add(category);
       notifyListeners();
     } catch (e) {
@@ -195,7 +194,8 @@ class TransactionProvider extends ChangeNotifier {
       
       if (categoryIndex != -1) {
         // 更新现有自定义分类
-        final updatedCategory = Category(
+        final updatedCategory = Category.create(
+          id: _customCategories[categoryIndex].id,
           name: _customCategories[categoryIndex].name,
           color: _customCategories[categoryIndex].color,
           icon: _customCategories[categoryIndex].icon,
@@ -203,7 +203,7 @@ class TransactionProvider extends ChangeNotifier {
           subCategories: [..._customCategories[categoryIndex].subCategories, subCategory],
         );
         
-        await _databaseService.updateCustomCategory(updatedCategory);
+        await _storageService.updateCustomCategory(updatedCategory);
         _customCategories[categoryIndex] = updatedCategory;
       } else {
         // 检查是否是默认分类，如果是，创建自定义版本
@@ -216,7 +216,8 @@ class TransactionProvider extends ChangeNotifier {
           orElse: () => throw Exception('分类不存在'),
         );
         
-        final newCategory = Category(
+        final newCategory = Category.create(
+          id: 'custom_${defaultCategory.id}',
           name: defaultCategory.name,
           color: defaultCategory.color,
           icon: defaultCategory.icon,
@@ -237,7 +238,7 @@ class TransactionProvider extends ChangeNotifier {
   // 更新罐头设置
   Future<void> updateJarSettings(JarSettings settings) async {
     try {
-      await _databaseService.saveJarSettings(settings);
+      await _storageService.saveJarSettings(settings);
       _jarSettings = settings;
       notifyListeners();
     } catch (e) {
@@ -261,10 +262,10 @@ class TransactionProvider extends ChangeNotifier {
   // 清空所有数据
   Future<void> clearAllData() async {
     try {
-      await _databaseService.clearAllData();
+      await _storageService.clearTransactions();
       _transactions.clear();
       _customCategories.clear();
-      _jarSettings = JarSettings(targetAmount: 1000.0, title: '我的储蓄罐');
+      _jarSettings = JarSettings.create(targetAmount: 1000.0, title: '我的储蓄罐');
       notifyListeners();
     } catch (e) {
       debugPrint('清空数据失败: $e');

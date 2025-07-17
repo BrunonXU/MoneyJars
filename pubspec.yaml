@@ -22,10 +22,10 @@ dependencies:
   # 状态管理
   provider: ^6.0.5
   
-  # 数据存储 - Web兼容
-  sqflite: ^2.3.0
-  sqflite_common_ffi_web: ^0.4.2+1  # Web平台SQLite支持
-  shared_preferences: ^2.2.2
+  # 数据存储 - Hive高性能本地数据库
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.2.2  # Web平台localStorage封装
   path: ^1.8.3
   
   # 图表可视化
@@ -46,6 +46,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  
+  # Hive代码生成
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.9
 
 flutter:
   uses-material-design: true
