@@ -1024,7 +1024,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   width: double.infinity,            // 容器宽度：占满屏幕宽度
                   height: double.infinity,           // 容器高度：占满屏幕高度
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 234, 233, 222),  // 浅色：与小猪背景匹配，填充白边区域
+                    color: const Color.fromARGB(255, 255, 255, 255),  // 白色：与小猪背景匹配，填充白边区域
                     image: DecorationImage(
                       image: AssetImage('assets/images/festive_piggy_bank.png'), // 小猪背景：渐入效果
                       fit: BoxFit.fitWidth,          // 填充模式：宽度完全匹配，高度可能裁剪

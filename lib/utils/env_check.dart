@@ -1,5 +1,8 @@
-import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+// 条件导入：Web平台导入实际实现，其他平台导入存根
+import 'env_check_stub.dart' if (dart.library.html) 'env_check_web.dart';
 
 /// 检查环境是否支持 MoneyJars Web 运行
 class EnvCheckResult {
@@ -11,40 +14,23 @@ class EnvCheckResult {
 class EnvChecker {
   /// 检查所有关键特性
   static EnvCheckResult check() {
-    // 1. 检查 IndexedDB
-    if (html.window.indexedDB == null) {
-      return EnvCheckResult(false, reason: 'IndexedDB 不支持');
+    // 非Web平台直接返回支持
+    if (!kIsWeb) {
+      return EnvCheckResult(true);
     }
-    // 2. 检查 localStorage/sessionStorage
+    
+    // Web平台进行详细检查
+    return _checkWebEnvironment();
+  }
+  
+  /// Web平台环境检查
+  static EnvCheckResult _checkWebEnvironment() {
     try {
-      html.window.localStorage['__test__'] = '1';
-      html.window.localStorage.remove('__test__');
-      html.window.sessionStorage['__test__'] = '1';
-      html.window.sessionStorage.remove('__test__');
+      // 使用条件导入的Web检查器
+      return WebEnvChecker.performWebChecks();
     } catch (e) {
-      return EnvCheckResult(false, reason: 'localStorage/sessionStorage 不支持');
+      return EnvCheckResult(false, reason: 'Web环境检查失败: $e');
     }
-    // 3. 检查 Service Worker
-    // 不能直接用 supported，改为判断 serviceWorker 是否为 null
-    if (html.window.navigator.serviceWorker == null) {
-      return EnvCheckResult(false, reason: 'Service Worker 不支持');
-    }
-    // 4. 检查主流浏览器
-    final ua = html.window.navigator.userAgent.toLowerCase();
-    final isSupportedBrowser =
-        ua.contains('chrome') || ua.contains('firefox') || ua.contains('safari') || ua.contains('edg');
-    if (!isSupportedBrowser) {
-      return EnvCheckResult(false, reason: '非主流浏览器');
-    }
-    // 5. 检查无痕/隐私模式（部分浏览器可检测）
-    // 这里只能做简单检测，无法100%准确
-    try {
-      html.window.localStorage['__incognito_test__'] = '1';
-      html.window.localStorage.remove('__incognito_test__');
-    } catch (e) {
-      return EnvCheckResult(false, reason: '可能处于无痕/隐私模式');
-    }
-    return EnvCheckResult(true);
   }
 }
 
