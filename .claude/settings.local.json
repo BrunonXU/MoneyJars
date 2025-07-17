@@ -21,7 +21,11 @@
       "Bash(dart compile:*)",
       "Bash(git reset:*)",
       "Bash(ls:*)",
-      "Bash(flutter:*)"
+      "Bash(flutter:*)",
+      "WebFetch(domain:brunonxu.github.io)",
+      "WebFetch(domain:brunonxu.github.io)",
+      "Bash(curl:*)",
+      "Bash(gh run list:*)"
     ],
     "deny": []
   }
