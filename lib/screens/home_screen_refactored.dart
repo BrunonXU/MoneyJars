@@ -25,7 +25,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 // 核心模块导入
 import '../providers/transaction_provider.dart';
-import '../models/transaction_record.dart';
+import '../models/transaction_record_hive.dart';
 import '../constants/app_constants.dart';
 import '../utils/responsive_layout.dart';
 
@@ -121,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     try {
       await Provider.of<TransactionProvider>(context, listen: false)
-          .loadTransactions();
+          .initializeData();
     } catch (e) {
       setState(() {
         _errorMessage = AppConstants.errorInitialization;

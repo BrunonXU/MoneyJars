@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../constants/app_constants.dart';
-import '../../models/transaction_model.dart';
+import '../../models/transaction_record_hive.dart';
 import '../../providers/transaction_provider.dart';
 import '../../widgets/money_jar_widget.dart';
 import '../hints/swipe_hint_widget.dart';

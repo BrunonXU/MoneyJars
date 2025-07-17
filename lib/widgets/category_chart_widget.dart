@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
-import '../models/transaction_record.dart';
+import '../models/transaction_record_hive.dart';
 import '../providers/transaction_provider.dart';
 
 class CategoryChartWidget extends StatefulWidget {
@@ -86,7 +86,7 @@ class _CategoryChartWidgetState extends State<CategoryChartWidget>
       ),
       body: Consumer<TransactionProvider>(
         builder: (context, provider, child) {
-          final statistics = provider.getCategoryStatistics(widget.type);
+          final statistics = provider.getCategoryStats(widget.type);
           
           if (statistics.isEmpty) {
             return _buildEmptyState();
@@ -425,7 +425,7 @@ class _CategoryChartWidgetState extends State<CategoryChartWidget>
             return DragTarget<TransactionRecord>(
               onAccept: (record) {
                 final provider = Provider.of<TransactionProvider>(context, listen: false);
-                provider.archiveTransaction(record.id, category);
+                provider.archiveTransaction(record.id);
                 setState(() {
                   _pendingRecords.removeWhere((r) => r.id == record.id);
                 });
