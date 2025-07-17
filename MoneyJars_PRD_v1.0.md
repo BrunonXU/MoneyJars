@@ -700,8 +700,8 @@ cd MoneyJars
 # 2. 安装依赖
 flutter pub get
 
-# 3. Web端数据库设置
-dart run sqflite_common_ffi_web:setup
+# 3. 生成Hive适配器（v1.0.1+）
+dart run build_runner build --delete-conflicting-outputs
 
 # 4. 运行项目
 flutter run -d chrome  # Web端

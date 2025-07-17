@@ -13,7 +13,7 @@ deploy.bat
 ### 方法2：手动部署
 ```bash
 flutter pub get
-dart run sqflite_common_ffi_web:setup
+dart run build_runner build --delete-conflicting-outputs
 flutter build web --release --no-tree-shake-icons
 ```
 

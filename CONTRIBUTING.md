@@ -44,8 +44,8 @@ git clone https://github.com/BrunonXU/MoneyJars.git
 # 安装依赖
 flutter pub get
 
-# 设置Web数据库
-dart run sqflite_common_ffi_web:setup
+# 生成Hive适配器（v1.0.1+）
+dart run build_runner build --delete-conflicting-outputs
 
 # 运行开发服务器
 flutter run -d chrome

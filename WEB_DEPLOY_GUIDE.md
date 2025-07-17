@@ -41,9 +41,9 @@
 flutter pub get
 ```
 
-### 步骤2：设置Web数据库
+### 步骤2：生成Hive适配器（v1.0.1+）
 ```bash
-dart run sqflite_common_ffi_web:setup
+dart run build_runner build --delete-conflicting-outputs
 ```
 
 ### 步骤3：本地测试
