@@ -1,27 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    动态设置 base href，自动适配本地开发和 GitHub Pages 部署
-    - 本地 (localhost/127.0.0.1): base href = "/"
-    - GitHub Pages: base href = "/MoneyJars/"
-  -->
-  <script>
-    (function() {
-      var isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
-      var base = document.createElement('base');
-      base.href = isLocal ? "/" : "/MoneyJars/";
-      
-      // 删除现有的 base 标签并插入新的
-      var existingBase = document.querySelector('base');
-      if (existingBase) {
-        existingBase.remove();
-      }
-      document.head.insertBefore(base, document.head.firstChild);
-    })();
-  </script>
-
-  <!-- Flutter 构建系统需要的占位符，会被上面的 JS 动态替换 -->
+  <!-- Flutter 构建系统会根据 --base-href 参数自动替换这个占位符 -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
