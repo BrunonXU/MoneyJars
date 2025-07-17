@@ -6,27 +6,58 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' hide Category;
 import '../models/transaction_record.dart';
 
+// 条件导入：Web平台使用专门的Web数据库服务
+import 'database_service_stub.dart' if (dart.library.html) 'database_service_web.dart';
+
 class DatabaseService {
   static Database? _database;
+  static bool _isInitializing = false;
+  
+  /// 工厂方法：根据平台创建合适的数据库服务
+  factory DatabaseService.create() {
+    if (kIsWeb) {
+      return WebDatabaseService();
+    } else {
+      return DatabaseService();
+    }
+  }
+  
+  /// 默认构造函数
+  DatabaseService();
   
   /// 获取数据库实例
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDatabase();
-    return _database!;
+    
+    // 避免重复初始化
+    if (_isInitializing) {
+      while (_isInitializing) {
+        await Future.delayed(Duration(milliseconds: 10));
+      }
+      return _database!;
+    }
+    
+    _isInitializing = true;
+    try {
+      _database = await _initDatabase();
+      return _database!;
+    } finally {
+      _isInitializing = false;
+    }
   }
 
   /// 初始化数据库
   Future<Database> _initDatabase() async {
     // Web平台使用不同的数据库工厂
     if (kIsWeb) {
-      // 设置Web平台的数据库工厂
-      databaseFactory = databaseFactoryFfiWeb;
-      return await openDatabase(
+      // 使用专门的Web数据库工厂，避免警告
+      return await databaseFactoryFfiWeb.openDatabase(
         'money_jars.db',
-        version: 2,
-        onCreate: _createDatabase,
-        onUpgrade: _upgradeDatabase,
+        options: OpenDatabaseOptions(
+          version: 2,
+          onCreate: _createDatabase,
+          onUpgrade: _upgradeDatabase,
+        ),
       );
     } else {
       // 移动平台使用默认路径

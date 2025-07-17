@@ -4,7 +4,7 @@ import '../models/transaction_record.dart';
 import '../services/database_service.dart';
 
 class TransactionProvider extends ChangeNotifier {
-  final DatabaseService _databaseService = DatabaseService();
+  final DatabaseService _databaseService = DatabaseService.create();
   
   List<TransactionRecord> _transactions = [];
   List<Category> _customCategories = [];

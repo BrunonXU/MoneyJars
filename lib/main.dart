@@ -9,7 +9,10 @@ import 'widgets/common/loading_widget.dart';
 import 'widgets/common/error_widget.dart';
 import 'utils/env_check.dart';
 
-void main() {
+void main() async {
+  // 确保Flutter binding初始化
+  WidgetsFlutterBinding.ensureInitialized();
+  
   final envResult = EnvChecker.check();
   if (!envResult.supported) {
     runApp(MaterialApp(
