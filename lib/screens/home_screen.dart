@@ -3,8 +3,8 @@
  * 
  * 页面结构：
  * ┌─────────────────────────────────────────────┐
- * │  📱 顶部导航栏 (AppBar)                        │
- * │  [设置] MoneyJars图标+标题 [占位]                │
+ * │  📱 顶部导航栏 (AppBar)                      │
+ * │  [设置] MoneyJars图标+标题 [占位]             │
  * ├─────────────────────────────────────────────┤
  * │  🎨 主内容区域 (背景图片 + 罐头组件)              │
  * │  🧭 左侧导航栏    📄 垂直PageView    🎯 右侧指示器  │
@@ -978,17 +978,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Color backgroundColor;                       // 背景颜色：与背景图片主色调匹配的填充色
         double opacity = 1.0;                        // 背景透明度：用于平滑过渡效果
         
-        if (page <= 0.5) {
+        if (page < 0.5) {
           // 📍 支出页面区域 (0.0 - 0.5)：绿色针织背景占主导
           backgroundImage = 'assets/images/green_knitted_jar.png'; // 绿色针织罐头背景
-          backgroundColor = const Color(0xFF2E7D32);  // 深绿色：与绿色针织背景匹配
-          if (page > 0) {
-            opacity = 1.0 - (page * 2);             // 透明度渐变：page=0时opacity=1.0，page=0.5时opacity=0.0
-          }
+          backgroundColor = const Color(0xFF104812);   // 深绿色：与绿色针织背景匹配
+          opacity = 1.0;                             // 支出页面区域完全不透明
         } else if (page <= 1.5) {
           // 📍 综合页面区域 (0.5 - 1.5)：小猪背景占主导
           backgroundImage = 'assets/images/festive_piggy_bank.png'; // 节日小猪存钱罐背景
-          backgroundColor = const Color(0xFFF3E5F5);  // 浅粉色：与小猪背景匹配
+          backgroundColor = const Color.fromARGB(255, 255, 255, 255);  // 
           if (page < 1) {
             opacity = page * 2;                      // 淡入效果：page=0.5时opacity=1.0，page=1.0时opacity=2.0
           } else {
@@ -997,7 +995,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         } else {
           // 📍 收入页面区域 (1.5 - 2.0)：红色针织背景占主导
           backgroundImage = 'assets/images/red_knitted_jar.png'; // 红色针织罐头背景
-          backgroundColor = const Color(0xFFB71C1C);  // 深红色：与红色针织背景匹配
+          backgroundColor = const Color(0xFF66120D);  // 深红色：与红色针织背景匹配
           opacity = (page - 1.0) * 2;                // 透明度计算：page=1.5时opacity=1.0，page=2.0时opacity=2.0
           if (opacity > 1.0) opacity = 1.0;         // 透明度限制：最大值1.0，避免过度透明
         }
@@ -1026,7 +1024,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   width: double.infinity,            // 容器宽度：占满屏幕宽度
                   height: double.infinity,           // 容器高度：占满屏幕高度
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF3E5F5),  // 浅粉色：与小猪背景匹配，填充白边区域
+                    color: const Color.fromARGB(255, 234, 233, 222),  // 浅色：与小猪背景匹配，填充白边区域
                     image: DecorationImage(
                       image: AssetImage('assets/images/festive_piggy_bank.png'), // 小猪背景：渐入效果
                       fit: BoxFit.fitWidth,          // 填充模式：宽度完全匹配，高度可能裁剪

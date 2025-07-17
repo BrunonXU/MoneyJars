@@ -109,7 +109,7 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
           maxHeight: 1.sh,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color.fromARGB(255, 0, 0, 0),
         ),
         child: Column(
           children: [
