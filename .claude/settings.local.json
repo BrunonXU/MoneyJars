@@ -8,7 +8,10 @@
       "Bash(flutter build:*)",
       "Bash(flutter pub:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(Test-Path \"d:\\NS--Normal--Software\\Wechat\\WeChat Files\\wxid_39yqqfvvmy9x22\\FileStorage\\File\\2025-07\\download_list.tsv\")",
+      "Bash(powershell:*)",
+      "Bash(flutter analyze:*)"
     ],
     "deny": []
   }

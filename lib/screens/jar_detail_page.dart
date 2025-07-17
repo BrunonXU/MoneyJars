@@ -223,7 +223,7 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
   // 构建AppBar
   Widget _buildAppBar() {
     return Container(
-      height: AppConstants.appBarHeight + 50, // 为TabBar增加高度
+      height: AppConstants.appBarHeight + 30, // 为TabBar增加适当高度，避免溢出
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
