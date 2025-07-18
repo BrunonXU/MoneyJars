@@ -23,8 +23,8 @@ class GestureHandler {
   bool _isDragging = false;
   Offset? _startPosition;
   
-  // 手势阈值配置
-  static const double _swipeThreshold = 80.0; // 增加阈值要求更明显的滑动
+  // 手势阈值配置 - 降低阈值提高滑动灵敏度
+  static const double _swipeThreshold = 40.0; // 优化后的灵敏阈值，提升手感
   
   void reset() {
     _accumulatedDelta = 0.0;
@@ -45,6 +45,7 @@ class GestureHandler {
   }
   
   // 修改1：滑动手感问题 - 拖拽更新处理，使用累积距离检测
+  // 关键修复：任何页面都可以滑动触发记录模式
   void handlePanUpdate(
     DragUpdateDetails details, {
     required bool isInputMode,
@@ -56,12 +57,13 @@ class GestureHandler {
       final delta = details.delta.dy;
       _accumulatedDelta += delta;
       
-      if (currentPage == 0 && _accumulatedDelta > _swipeThreshold) {
-        // 支出罐头，向下滑动进入输入模式
+      // 修复：任何页面都支持向下滑动进入支出记录
+      if (_accumulatedDelta > _swipeThreshold) {
         onExpenseSwipe?.call();
         reset();
-      } else if (currentPage == 2 && _accumulatedDelta < -_swipeThreshold) {
-        // 收入罐头，向上滑动进入输入模式
+      }
+      // 修复：任何页面都支持向上滑动进入收入记录  
+      else if (_accumulatedDelta < -_swipeThreshold) {
         onIncomeSwipe?.call();
         reset();
       }

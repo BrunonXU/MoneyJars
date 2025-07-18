@@ -231,7 +231,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             BackgroundWidget(pageController: _pageController),
             
             // 🍯 罐头页面视图
-            JarPageView(pageController: _pageController),
+            JarPageView(
+              pageController: _pageController,
+              isInputMode: _isInputMode,
+              onExpenseSwipe: _onExpenseSwipe,
+              onIncomeSwipe: _onIncomeSwipe,
+            ),
             
             // 🧭 左侧导航栏
             LeftNavigationWidget(
@@ -273,11 +278,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Center(
         child: EnhancedTransactionInput(
           type: _inputType!,
-          onSubmit: _handleTransactionSubmit,
+          onComplete: _handleTransactionSubmit,
           onCancel: _handleTransactionCancel,
         ),
       ),
     );
+  }
+
+  // ===== 🎯 手势交互处理方法 =====
+  
+  /// 💰 支出手势回调
+  /// 在支出页面向下滑动时触发，进入支出记录模式
+  void _onExpenseSwipe() {
+    _enterInputMode(TransactionType.expense); // 进入支出输入模式
+    HapticFeedback.lightImpact();             // 轻微触觉反馈：确认手势识别成功
+  }
+
+  /// 💰 收入手势回调  
+  /// 在收入页面向上滑动时触发，进入收入记录模式
+  void _onIncomeSwipe() {
+    _enterInputMode(TransactionType.income);  // 进入收入输入模式
+    HapticFeedback.lightImpact();             // 轻微触觉反馈：确认手势识别成功
+  }
+
+  /// 🎯 进入交易输入模式
+  /// 显示EnhancedTransactionInput覆盖层，开始交易记录流程
+  void _enterInputMode(TransactionType type) {
+    HapticFeedback.lightImpact();             // 轻微震动反馈：模式切换确认
+    setState(() {
+      _isInputMode = true;                    // 启用输入模式：显示输入界面覆盖层
+      _inputType = type;                      // 设置交易类型：支出或收入
+    });
   }
 
   // ===== 🎯 导航处理方法 =====
@@ -365,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // ===== 🎯 交易处理方法 =====
   
   /// 处理交易提交
-  void _handleTransactionSubmit(TransactionRecord transaction) {
+  void _handleTransactionSubmit() {
     // 交易提交逻辑
     setState(() {
       _isInputMode = false;

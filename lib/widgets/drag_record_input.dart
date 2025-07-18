@@ -20,7 +20,6 @@ import 'dart:math' as math;
 import '../models/transaction_record_hive.dart';
 import '../providers/transaction_provider.dart';
 import '../constants/app_constants.dart';
-import 'enhanced_pie_chart.dart';
 
 class DragRecordInput extends StatefulWidget {
   final TransactionType type;
@@ -56,6 +55,7 @@ class _DragRecordInputState extends State<DragRecordInput>
   late Animation<Offset> _returnAnimation;
 
   Offset _recordPosition = Offset.zero;
+  Offset? _dragOffset; // 手指相对于白点中心的偏移量
   bool _isDragging = false;
   bool _isShowingSubCategories = false;
   String? _selectedParentCategory;
@@ -123,11 +123,16 @@ class _DragRecordInputState extends State<DragRecordInput>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final screenSize = MediaQuery.of(context).size;
       setState(() {
+        // 白色圆点出现在整个屏幕的中心
         _recordPosition = Offset(
           screenSize.width / 2,
-          screenSize.height - 150,
+          screenSize.height / 2,
         );
       });
+      
+      // 启动呼吸动画
+      _pulseController.repeat(reverse: true);
+      _fadeController.forward();
     });
   }
 
@@ -147,20 +152,20 @@ class _DragRecordInputState extends State<DragRecordInput>
       builder: (context, provider, child) {
         return Stack(
           children: [
-            // 背景遮罩
+            // 背景遮罩 - 毛玻璃效果遮挡一切
             _buildBackgroundOverlay(),
             
             // 环状图分类区域
             _buildCategoryChart(provider),
-            
-            // 可拖拽的记录单元
-            _buildDraggableRecord(),
             
             // 操作按钮
             _buildActionButtons(),
             
             // 提示信息
             _buildHintText(),
+            
+            // 可拖拽的记录单元 - 最高层，永远可见
+            _buildDraggableRecord(),
           ],
         );
       },
@@ -171,35 +176,31 @@ class _DragRecordInputState extends State<DragRecordInput>
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
-        return Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppConstants.primaryGradient[0].withOpacity((_isDragging ? 0.1 : 0.3) * _fadeAnimation.value),
-                AppConstants.primaryGradient[1].withOpacity((_isDragging ? 0.2 : 0.5) * _fadeAnimation.value),
-                Colors.black.withOpacity((_isDragging ? 0.4 : 0.7) * _fadeAnimation.value),
-              ],
-            ),
-          ),
-          child: Stack(
-            children: [
-              // 背景模糊效果 - 初始就有，拖拽时消失
-              if (!_isDragging)
-                BackdropFilter(
-                  filter: ui.ImageFilter.blur(
-                    sigmaX: 15.0 * _fadeAnimation.value,
-                    sigmaY: 15.0 * _fadeAnimation.value,
-                  ),
-                  child: Container(
-                    color: Colors.transparent,
+        return Stack(
+          children: [
+            // 全屏毛玻璃蒙版 - 遮挡所有背景内容
+            BackdropFilter(
+              filter: ui.ImageFilter.blur(
+                sigmaX: 25.0 * _fadeAnimation.value,
+                sigmaY: 25.0 * _fadeAnimation.value,
+              ),
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.3 * _fadeAnimation.value),
+                      Colors.black.withOpacity(0.5 * _fadeAnimation.value),
+                      Colors.black.withOpacity(0.7 * _fadeAnimation.value),
+                    ],
                   ),
                 ),
-            ],
-          ),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -521,16 +522,22 @@ class _DragRecordInputState extends State<DragRecordInput>
   void _onPanStart(DragStartDetails details) {
     setState(() {
       _isDragging = true;
+      // 计算手指相对于白点中心的偏移量
+      _dragOffset = details.globalPosition - _recordPosition;
     });
     _scaleController.forward();
+    _pulseController.stop(); // 停止呼吸动画
     HapticFeedback.lightImpact();
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
     setState(() {
-      _recordPosition = details.globalPosition;
+      // 白点位置 = 手指位置 - 初始偏移量，确保平滑跟随
+      if (_dragOffset != null) {
+        _recordPosition = details.globalPosition - _dragOffset!;
+      }
     });
-    _checkHover();
+    _checkHover(); // 实时检测悬停分类
   }
 
   void _onPanEnd(DragEndDetails details) {
@@ -538,6 +545,7 @@ class _DragRecordInputState extends State<DragRecordInput>
       _isDragging = false;
     });
     _scaleController.reverse();
+    _pulseController.repeat(reverse: true); // 恢复呼吸动画
     _handleDrop();
   }
 
@@ -549,13 +557,13 @@ class _DragRecordInputState extends State<DragRecordInput>
     
     final distance = (_recordPosition - center).distance;
     
-    if (distance > AppConstants.pieChartRadius + 60) {
+    if (distance > AppConstants.pieChartRadius + 30) { // 减少识别范围，提高精度
       // 在环外，可以创建新分类
       setState(() {
         _hoveredCategory = null;
         _canCreateNewCategory = true;
       });
-    } else if (distance > AppConstants.pieChartCenterRadius && distance <= AppConstants.pieChartRadius + 40) {
+    } else if (distance > AppConstants.pieChartCenterRadius && distance <= AppConstants.pieChartRadius + 20) { // 更精确的识别范围
       // 在环状图区域内（包括悬停扩展区域）
       final angle = math.atan2(
         _recordPosition.dy - center.dy,
@@ -830,23 +838,12 @@ class EnhancedPieChartPainter extends CustomPainter {
       final isHovered = category == hoveredCategory;
       final currentRadius = isHovered ? radius + 25 : radius; // 增大悬停效果
       
-      // 获取分类颜色
-      final baseColor = AppConstants.categoryColors[i % AppConstants.categoryColors.length];
+      // 简单2D白色块
+      _draw2DSegment(canvas, center, currentRadius, innerRadius, startAngle, angleStep, isHovered);
       
-      if (canCreateNew) {
-        // 环外状态：所有类别变成深灰色
-        _draw3DSegment(canvas, center, currentRadius, innerRadius, startAngle, angleStep, 
-            Colors.black.withOpacity(0.15), false);
-      } else {
-        // 正常状态 - 绘制3D效果
-        final segmentColor = isHovered ? baseColor : baseColor.withOpacity(0.9);
-        _draw3DSegment(canvas, center, currentRadius, innerRadius, startAngle, angleStep, 
-            segmentColor, isHovered);
-      }
-      
-      // 绘制分类标签
+      // 绘制分类标签 - 黑色字体
       _drawCategoryLabel(canvas, center, category, startAngle + angleStep / 2, currentRadius, 
-          canCreateNew ? Colors.grey.withOpacity(0.3) : baseColor);
+          Colors.black); // 始终黑色字体
       
       startAngle += angleStep;
     }
@@ -856,10 +853,13 @@ class EnhancedPieChartPainter extends CustomPainter {
       double startAngle, double angleStep, Color color, bool isHighlighted) {
     final paint = Paint()..style = PaintingStyle.fill;
     
-    // 底部阴影
+    // 3D芝士蛋糕效果：绘制垂直厚度
+    const double depth = 12.0; // 3D厚度
+    
+    // 1. 底部阴影（更深的阴影模拟立体效果）
     canvas.save();
-    canvas.translate(3, 6); // 阴影偏移
-    paint.color = Colors.black.withOpacity(0.2);
+    canvas.translate(4, 8); // 更明显的阴影偏移
+    paint.color = Colors.black.withOpacity(0.4);
     final shadowRect = Rect.fromCircle(center: center, radius: radius);
     canvas.drawArc(shadowRect, startAngle, angleStep, true, paint);
     
@@ -870,19 +870,22 @@ class EnhancedPieChartPainter extends CustomPainter {
     paint.blendMode = BlendMode.srcOver;
     canvas.restore();
     
-    // 主体渐变
-    final gradient = RadialGradient(
-      center: Alignment.topLeft,
-      radius: 1.5,
+    // 2. 绘制侧面（垂直边缘）
+    _draw3DSides(canvas, center, radius, innerRadius, startAngle, angleStep, color, depth);
+    
+    // 3. 顶面渐变（芝士蛋糕的顶层效果）
+    final topGradient = RadialGradient(
+      center: Alignment(-0.3, -0.3), // 光源从左上角照射
+      radius: 1.2,
       colors: [
-        color.withOpacity(isHighlighted ? 1.0 : 0.9),
-        color.withOpacity(isHighlighted ? 0.8 : 0.6),
-        color.withOpacity(isHighlighted ? 0.6 : 0.4),
+        Color.lerp(color, Colors.white, 0.4)!, // 高光区域
+        color, // 中间色调
+        Color.lerp(color, Colors.black, 0.2)!, // 阴影区域
       ],
-      stops: const [0.0, 0.7, 1.0],
+      stops: const [0.0, 0.6, 1.0],
     );
     
-    paint.shader = gradient.createShader(
+    paint.shader = topGradient.createShader(
       Rect.fromCircle(center: center, radius: radius),
     );
     
@@ -896,21 +899,119 @@ class EnhancedPieChartPainter extends CustomPainter {
     canvas.drawCircle(center, innerRadius, paint);
     paint.blendMode = BlendMode.srcOver;
     
-    // 高光效果
+    // 4. 高光效果（增强立体感）
     if (isHighlighted) {
-      paint.color = Colors.white.withOpacity(0.3);
+      // 外边缘高光
+      paint.color = Colors.white.withOpacity(0.6);
       paint.style = PaintingStyle.stroke;
-      paint.strokeWidth = 3;
+      paint.strokeWidth = 4;
       canvas.drawArc(rect, startAngle, angleStep, false, paint);
       
-      // 内侧高光
+      // 内侧柔和高光
       paint.strokeWidth = 2;
-      paint.color = Colors.white.withOpacity(0.5);
-      final innerHighlightRect = Rect.fromCircle(center: center, radius: radius * 0.85);
+      paint.color = Colors.white.withOpacity(0.3);
+      final innerHighlightRect = Rect.fromCircle(center: center, radius: radius * 0.9);
       canvas.drawArc(innerHighlightRect, startAngle, angleStep, false, paint);
+      
+      // 顶面额外光泽
+      paint.style = PaintingStyle.fill;
+      paint.color = Colors.white.withOpacity(0.2);
+      final highlightRect = Rect.fromCircle(center: center, radius: radius * 0.7);
+      canvas.drawArc(highlightRect, startAngle, angleStep, true, paint);
     }
     
     paint.style = PaintingStyle.fill;
+  }
+
+  /// 绘制简单2D白色扇形
+  void _draw2DSegment(Canvas canvas, Offset center, double radius, double innerRadius, 
+      double startAngle, double angleStep, bool isHighlighted) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    
+    // 纯白色填充
+    paint.color = Colors.white;
+    
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    canvas.drawArc(rect, startAngle, angleStep, true, paint);
+    
+    // 清除内圆
+    paint.color = Colors.transparent;
+    paint.blendMode = BlendMode.clear;
+    canvas.drawCircle(center, innerRadius, paint);
+    paint.blendMode = BlendMode.srcOver;
+    
+    // 悬停时的边框高光
+    if (isHighlighted) {
+      paint.color = Colors.black.withOpacity(0.3);
+      paint.style = PaintingStyle.stroke;
+      paint.strokeWidth = 2;
+      canvas.drawArc(rect, startAngle, angleStep, false, paint);
+    }
+    
+    paint.style = PaintingStyle.fill;
+  }
+  
+  /// 绘制3D侧面，营造芝士蛋糕的厚度效果
+  void _draw3DSides(Canvas canvas, Offset center, double radius, double innerRadius, 
+      double startAngle, double angleStep, Color color, double depth) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    
+    // 计算扇形的起点和终点
+    final startX = center.dx + radius * math.cos(startAngle);
+    final startY = center.dy + radius * math.sin(startAngle);
+    final endAngle = startAngle + angleStep;
+    final endX = center.dx + radius * math.cos(endAngle);
+    final endY = center.dy + radius * math.sin(endAngle);
+    
+    // 内圆的对应点
+    final innerStartX = center.dx + innerRadius * math.cos(startAngle);
+    final innerStartY = center.dy + innerRadius * math.sin(startAngle);
+    final innerEndX = center.dx + innerRadius * math.cos(endAngle);
+    final innerEndY = center.dy + innerRadius * math.sin(endAngle);
+    
+    // 侧面颜色（比顶面暗一些）
+    final sideColor = Color.lerp(color, Colors.black, 0.3)!;
+    
+    // 绘制外弧的侧面
+    final outerPath = Path();
+    outerPath.moveTo(startX, startY);
+    outerPath.arcTo(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle, angleStep, false
+    );
+    outerPath.lineTo(endX, endY + depth);
+    outerPath.arcTo(
+      Rect.fromCircle(center: Offset(center.dx, center.dy + depth), radius: radius),
+      endAngle, -angleStep, false
+    );
+    outerPath.close();
+    
+    paint.color = sideColor;
+    canvas.drawPath(outerPath, paint);
+    
+    // 绘制径向侧面（如果可见）
+    if (angleStep < math.pi) { // 只在扇形小于半圆时绘制径向侧面
+      // 起始径向面
+      final startRadialPath = Path();
+      startRadialPath.moveTo(innerStartX, innerStartY);
+      startRadialPath.lineTo(startX, startY);
+      startRadialPath.lineTo(startX, startY + depth);
+      startRadialPath.lineTo(innerStartX, innerStartY + depth);
+      startRadialPath.close();
+      
+      paint.color = Color.lerp(sideColor, Colors.black, 0.2)!;
+      canvas.drawPath(startRadialPath, paint);
+      
+      // 结束径向面
+      final endRadialPath = Path();
+      endRadialPath.moveTo(innerEndX, innerEndY);
+      endRadialPath.lineTo(endX, endY);
+      endRadialPath.lineTo(endX, endY + depth);
+      endRadialPath.lineTo(innerEndX, innerEndY + depth);
+      endRadialPath.close();
+      
+      canvas.drawPath(endRadialPath, paint);
+    }
   }
 
   void _drawCategoryLabel(Canvas canvas, Offset center, String category, double angle, double radius, Color color) {
@@ -924,8 +1025,9 @@ class EnhancedPieChartPainter extends CustomPainter {
       text: TextSpan(
         text: category,
         style: AppConstants.captionStyle.copyWith(
-          color: AppConstants.cardColor,
+          color: color, // 使用传入的颜色，现在是黑色
           fontWeight: FontWeight.bold,
+          fontSize: (AppConstants.captionStyle.fontSize ?? 12) * 1.4, // 字体放大40%
         ),
       ),
       textAlign: TextAlign.center,
@@ -1120,16 +1222,11 @@ class EnhancedSubCategoryPieChartPainter extends CustomPainter {
       final isHovered = subCategory == hoveredCategory;
       final currentRadius = isHovered ? radius + 25 : radius;
       
-      // 获取子分类颜色（使用更亮的色调）
-      final baseColor = AppConstants.categoryColors[(i + 2) % AppConstants.categoryColors.length];
-      final color = Color.lerp(baseColor, Colors.white, 0.2)!;
+      // 简单2D白色块
+      _draw2DSegment(canvas, center, currentRadius, innerRadius, startAngle, angleStep, isHovered);
       
-      // 绘制3D子分类扇形
-      _draw3DSegment(canvas, center, currentRadius, innerRadius, startAngle, angleStep, 
-          color, isHovered);
-      
-      // 绘制子分类标签
-      _drawSubCategoryLabel(canvas, center, subCategory, startAngle + angleStep / 2, currentRadius, color);
+      // 绘制子分类标签 - 黑色字体
+      _drawSubCategoryLabel(canvas, center, subCategory, startAngle + angleStep / 2, currentRadius, Colors.black);
       
       startAngle += angleStep;
     }
@@ -1146,9 +1243,9 @@ class EnhancedSubCategoryPieChartPainter extends CustomPainter {
       text: TextSpan(
         text: subCategory,
         style: AppConstants.captionStyle.copyWith(
-          color: AppConstants.cardColor,
+          color: color, // 使用传入的颜色，现在是黑色
           fontWeight: FontWeight.bold,
-          fontSize: 11,
+          fontSize: 11 * 1.4, // 字体放大40%
         ),
       ),
       textAlign: TextAlign.center,
@@ -1203,14 +1300,45 @@ class EnhancedSubCategoryPieChartPainter extends CustomPainter {
     );
   }
 
+  /// 绘制简单2D白色扇形（子分类版本）
+  void _draw2DSegment(Canvas canvas, Offset center, double radius, double innerRadius, 
+      double startAngle, double angleStep, bool isHighlighted) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    
+    // 纯白色填充
+    paint.color = Colors.white;
+    
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    canvas.drawArc(rect, startAngle, angleStep, true, paint);
+    
+    // 清除内圆
+    paint.color = Colors.transparent;
+    paint.blendMode = BlendMode.clear;
+    canvas.drawCircle(center, innerRadius, paint);
+    paint.blendMode = BlendMode.srcOver;
+    
+    // 悬停时的边框高光
+    if (isHighlighted) {
+      paint.color = Colors.black.withOpacity(0.3);
+      paint.style = PaintingStyle.stroke;
+      paint.strokeWidth = 2;
+      canvas.drawArc(rect, startAngle, angleStep, false, paint);
+    }
+    
+    paint.style = PaintingStyle.fill;
+  }
+
   void _draw3DSegment(Canvas canvas, Offset center, double radius, double innerRadius, 
       double startAngle, double angleStep, Color color, bool isHighlighted) {
     final paint = Paint()..style = PaintingStyle.fill;
     
-    // 底部阴影
+    // 3D芝士蛋糕效果：绘制垂直厚度
+    const double depth = 12.0; // 3D厚度
+    
+    // 1. 底部阴影（更深的阴影模拟立体效果）
     canvas.save();
-    canvas.translate(3, 6); // 阴影偏移
-    paint.color = Colors.black.withOpacity(0.2);
+    canvas.translate(4, 8); // 更明显的阴影偏移
+    paint.color = Colors.black.withOpacity(0.4);
     final shadowRect = Rect.fromCircle(center: center, radius: radius);
     canvas.drawArc(shadowRect, startAngle, angleStep, true, paint);
     
@@ -1221,19 +1349,22 @@ class EnhancedSubCategoryPieChartPainter extends CustomPainter {
     paint.blendMode = BlendMode.srcOver;
     canvas.restore();
     
-    // 主体渐变
-    final gradient = RadialGradient(
-      center: Alignment.topLeft,
-      radius: 1.5,
+    // 2. 绘制侧面（垂直边缘）
+    _draw3DSides(canvas, center, radius, innerRadius, startAngle, angleStep, color, depth);
+    
+    // 3. 顶面渐变（芝士蛋糕的顶层效果）
+    final topGradient = RadialGradient(
+      center: Alignment(-0.3, -0.3), // 光源从左上角照射
+      radius: 1.2,
       colors: [
-        color.withOpacity(isHighlighted ? 1.0 : 0.9),
-        color.withOpacity(isHighlighted ? 0.8 : 0.6),
-        color.withOpacity(isHighlighted ? 0.6 : 0.4),
+        Color.lerp(color, Colors.white, 0.4)!, // 高光区域
+        color, // 中间色调
+        Color.lerp(color, Colors.black, 0.2)!, // 阴影区域
       ],
-      stops: const [0.0, 0.7, 1.0],
+      stops: const [0.0, 0.6, 1.0],
     );
     
-    paint.shader = gradient.createShader(
+    paint.shader = topGradient.createShader(
       Rect.fromCircle(center: center, radius: radius),
     );
     
@@ -1247,21 +1378,91 @@ class EnhancedSubCategoryPieChartPainter extends CustomPainter {
     canvas.drawCircle(center, innerRadius, paint);
     paint.blendMode = BlendMode.srcOver;
     
-    // 高光效果
+    // 4. 高光效果（增强立体感）
     if (isHighlighted) {
-      paint.color = Colors.white.withOpacity(0.3);
+      // 外边缘高光
+      paint.color = Colors.white.withOpacity(0.6);
       paint.style = PaintingStyle.stroke;
-      paint.strokeWidth = 3;
+      paint.strokeWidth = 4;
       canvas.drawArc(rect, startAngle, angleStep, false, paint);
       
-      // 内侧高光
+      // 内侧柔和高光
       paint.strokeWidth = 2;
-      paint.color = Colors.white.withOpacity(0.5);
-      final innerHighlightRect = Rect.fromCircle(center: center, radius: radius * 0.85);
+      paint.color = Colors.white.withOpacity(0.3);
+      final innerHighlightRect = Rect.fromCircle(center: center, radius: radius * 0.9);
       canvas.drawArc(innerHighlightRect, startAngle, angleStep, false, paint);
+      
+      // 顶面额外光泽
+      paint.style = PaintingStyle.fill;
+      paint.color = Colors.white.withOpacity(0.2);
+      final highlightRect = Rect.fromCircle(center: center, radius: radius * 0.7);
+      canvas.drawArc(highlightRect, startAngle, angleStep, true, paint);
     }
     
     paint.style = PaintingStyle.fill;
+  }
+  
+  /// 绘制3D侧面，营造芝士蛋糕的厚度效果（子分类版本）
+  void _draw3DSides(Canvas canvas, Offset center, double radius, double innerRadius, 
+      double startAngle, double angleStep, Color color, double depth) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    
+    // 计算扇形的起点和终点
+    final startX = center.dx + radius * math.cos(startAngle);
+    final startY = center.dy + radius * math.sin(startAngle);
+    final endAngle = startAngle + angleStep;
+    final endX = center.dx + radius * math.cos(endAngle);
+    final endY = center.dy + radius * math.sin(endAngle);
+    
+    // 内圆的对应点
+    final innerStartX = center.dx + innerRadius * math.cos(startAngle);
+    final innerStartY = center.dy + innerRadius * math.sin(startAngle);
+    final innerEndX = center.dx + innerRadius * math.cos(endAngle);
+    final innerEndY = center.dy + innerRadius * math.sin(endAngle);
+    
+    // 侧面颜色（比顶面暗一些）
+    final sideColor = Color.lerp(color, Colors.black, 0.3)!;
+    
+    // 绘制外弧的侧面
+    final outerPath = Path();
+    outerPath.moveTo(startX, startY);
+    outerPath.arcTo(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle, angleStep, false
+    );
+    outerPath.lineTo(endX, endY + depth);
+    outerPath.arcTo(
+      Rect.fromCircle(center: Offset(center.dx, center.dy + depth), radius: radius),
+      endAngle, -angleStep, false
+    );
+    outerPath.close();
+    
+    paint.color = sideColor;
+    canvas.drawPath(outerPath, paint);
+    
+    // 绘制径向侧面（如果可见）
+    if (angleStep < math.pi) { // 只在扇形小于半圆时绘制径向侧面
+      // 起始径向面
+      final startRadialPath = Path();
+      startRadialPath.moveTo(innerStartX, innerStartY);
+      startRadialPath.lineTo(startX, startY);
+      startRadialPath.lineTo(startX, startY + depth);
+      startRadialPath.lineTo(innerStartX, innerStartY + depth);
+      startRadialPath.close();
+      
+      paint.color = Color.lerp(sideColor, Colors.black, 0.2)!;
+      canvas.drawPath(startRadialPath, paint);
+      
+      // 结束径向面
+      final endRadialPath = Path();
+      endRadialPath.moveTo(innerEndX, innerEndY);
+      endRadialPath.lineTo(endX, endY);
+      endRadialPath.lineTo(endX, endY + depth);
+      endRadialPath.lineTo(innerEndX, innerEndY + depth);
+      endRadialPath.close();
+      
+      canvas.drawPath(endRadialPath, paint);
+    }
   }
 
   @override
@@ -1270,6 +1471,7 @@ class EnhancedSubCategoryPieChartPainter extends CustomPainter {
         oldDelegate.hoveredCategory != hoveredCategory;
   }
 }
+
 
 // 创建分类对话框
 class CreateCategoryDialog extends StatefulWidget {

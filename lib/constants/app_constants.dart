@@ -28,6 +28,10 @@ class AppConstants {
   static const Color comprehensiveNegativeColor = Color(0xFFE57373);  // 柔和红色 - 综合亏损
   static const Color backgroundColor = Color(0xFFF5F5F5);  // 浅灰背景色，简化
   static const Color cardColor = Color(0xFF1A3D2E);       // 圣诞卡片色
+  
+  /// 记录页面深色背景（与针织罐头背景匹配）
+  static const Color deepGreenBackground = Color(0xFF104812);  // 深绿色：与绿色针织背景匹配
+  static const Color deepRedBackground = Color(0xFF66120D);    // 深红色：与红色针织背景匹配
   static const Color textPrimaryColor = Color(0xFFFFFFFF);
   static const Color textSecondaryColor = Color(0xFFBBBBBB);
   static const Color dividerColor = Color(0xFFE8E8E8);

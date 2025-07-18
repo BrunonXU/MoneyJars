@@ -121,7 +121,7 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
           child: Container(
             width: double.infinity,
             height: double.infinity,
-            color: Colors.black.withOpacity(0.6 * _fadeAnimation.value),
+            color: _getBackgroundColor().withOpacity(0.9 * _fadeAnimation.value),
           ),
         );
       },
@@ -138,10 +138,10 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
             child: Transform.scale(
               scale: _scaleAnimation.value,
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLarge),
-                padding: const EdgeInsets.all(AppConstants.spacingXLarge),
+                margin: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLarge * 0.85), // 缩小15%
+                padding: const EdgeInsets.all(AppConstants.spacingXLarge * 0.85), // 缩小15%
                 decoration: BoxDecoration(
-                  color: AppConstants.cardColor,
+                  color: Colors.white, // 白色背景以显示黑色字体
                   borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
                   boxShadow: AppConstants.shadowLarge,
                 ),
@@ -195,13 +195,15 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
                     ? '记录收入' 
                     : '记录支出',
                 style: AppConstants.titleStyle.copyWith(
-                  color: _getTypeColor(),
+                  color: Colors.black, // 黑色字体
                 ),
               ),
               const SizedBox(height: AppConstants.spacingXSmall),
               Text(
                 '填写金额和描述信息',
-                style: AppConstants.captionStyle,
+                style: AppConstants.captionStyle.copyWith(
+                  color: Colors.black54, // 深灰色字体
+                ),
               ),
             ],
           ),
@@ -209,7 +211,7 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
         IconButton(
           icon: Icon(
             Icons.close,
-            color: AppConstants.textSecondaryColor,
+            color: Colors.black54, // 深灰色图标
           ),
           onPressed: widget.onCancel,
         ),
@@ -242,6 +244,7 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
           AppConstants.labelAmount,
           style: AppConstants.bodyStyle.copyWith(
             fontWeight: FontWeight.w600,
+            color: Colors.black, // 黑色字体
           ),
         ),
         const SizedBox(height: AppConstants.spacingSmall),
@@ -317,6 +320,7 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
           AppConstants.labelDescription,
           style: AppConstants.bodyStyle.copyWith(
             fontWeight: FontWeight.w600,
+            color: Colors.black, // 黑色字体
           ),
         ),
         const SizedBox(height: AppConstants.spacingSmall),
@@ -374,7 +378,7 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
             child: Text(
               AppConstants.buttonCancel,
               style: AppConstants.bodyStyle.copyWith(
-                color: AppConstants.textSecondaryColor,
+                color: Colors.black54, // 深灰色字体
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -386,7 +390,7 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
             onPressed: _isLoading ? null : _proceedToNext,
             style: ElevatedButton.styleFrom(
               backgroundColor: _getTypeColor(),
-              foregroundColor: AppConstants.cardColor,
+              foregroundColor: Colors.white, // 白色字体在彩色按钮上
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
               ),
@@ -401,7 +405,7 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppConstants.cardColor),
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white), // 白色加载指示器
                     ),
                   )
                 : Row(
@@ -410,7 +414,7 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
                       Text(
                         AppConstants.buttonNext,
                         style: AppConstants.bodyStyle.copyWith(
-                          color: AppConstants.cardColor,
+                          color: Colors.white, // 白色字体
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -418,7 +422,7 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
                       Icon(
                         Icons.arrow_forward,
                         size: AppConstants.iconSmall,
-                        color: AppConstants.cardColor,
+                        color: Colors.white, // 白色图标
                       ),
                     ],
                   ),
@@ -455,6 +459,13 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
     return widget.type == TransactionType.income
         ? AppConstants.incomeColor
         : AppConstants.expenseColor;
+  }
+
+  /// 获取记录页面背景颜色（与罐头背景匹配）
+  Color _getBackgroundColor() {
+    return widget.type == TransactionType.income
+        ? AppConstants.deepRedBackground   // 收入使用深红色背景 0xFF66120D
+        : AppConstants.deepGreenBackground; // 支出使用深绿色背景 0xFF104812
   }
 
   IconData _getTypeIcon() {

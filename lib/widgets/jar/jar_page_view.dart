@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/app_constants.dart';
 import '../../providers/transaction_provider.dart';
+import '../../models/transaction_record_hive.dart';
+import '../gesture_handler.dart';
 import 'jar_page_widget.dart';
 
 /// 🍯 罐头页面视图组件
@@ -10,6 +12,7 @@ import 'jar_page_widget.dart';
 /// - 垂直滑动的PageView管理
 /// - 三个罐头页面的组织和展示
 /// - 滑动物理效果和交互体验
+/// - 手势检测和输入模式触发
 /// 
 /// 页面结构：
 /// - 第0页：支出罐头页面
@@ -20,43 +23,99 @@ import 'jar_page_widget.dart';
 /// - 垂直滑动方向
 /// - iOS风格弹性滚动
 /// - 隐式滚动支持
+/// - 整页面手势检测
 /// - 数据驱动的页面内容
-class JarPageView extends StatelessWidget {
+class JarPageView extends StatefulWidget {
   /// 页面控制器
   final PageController pageController;
+  
+  /// 手势检测回调
+  final VoidCallback? onExpenseSwipe;
+  final VoidCallback? onIncomeSwipe;
+  
+  /// 输入模式状态
+  final bool isInputMode;
 
   const JarPageView({
     Key? key,
     required this.pageController,
+    this.onExpenseSwipe,
+    this.onIncomeSwipe,
+    this.isInputMode = false,
   }) : super(key: key);
+
+  @override
+  State<JarPageView> createState() => _JarPageViewState();
+}
+
+class _JarPageViewState extends State<JarPageView> {
+  late GestureHandler _gestureHandler;
+  int _currentPage = 1; // 默认在综合页面
+  
+  @override
+  void initState() {
+    super.initState();
+    _gestureHandler = GestureHandler();
+    
+    // 监听页面变化
+    widget.pageController.addListener(() {
+      if (widget.pageController.hasClients) {
+        final newPage = widget.pageController.page?.round() ?? 1;
+        if (newPage != _currentPage) {
+          setState(() {
+            _currentPage = newPage;
+          });
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<TransactionProvider>(
       builder: (context, provider, child) {
-        return _buildPageView(provider);
+        return _buildPageViewWithGestures(provider);
       },
     );
   }
 
-  /// 🎨 构建页面视图
+  /// 🎨 构建包含手势检测的页面视图
   /// 
-  /// 创建包含三个罐头页面的垂直滑动视图
-  Widget _buildPageView(TransactionProvider provider) {
-    return PageView(
-      controller: pageController, // 页面控制器：管理滑动状态
-      scrollDirection: Axis.vertical, // 滑动方向：垂直滑动
-      physics: const BouncingScrollPhysics(), // 物理效果：iOS风格弹性滚动
-      allowImplicitScrolling: true, // 隐式滚动：连续滚动体验
+  /// 创建包含三个罐头页面的垂直滑动视图，带有全页面手势检测
+  Widget _buildPageViewWithGestures(TransactionProvider provider) {
+    return Stack(
       children: [
-        // 🍯 支出罐头页面 (index: 0)：绿色针织背景 + 红色主题 + 向下滑动提示
-        JarPageFactory.createExpensePage(provider: provider),
+        // 底层：PageView负责页面滑动
+        PageView(
+          controller: widget.pageController, // 页面控制器：管理滑动状态
+          scrollDirection: Axis.vertical, // 滑动方向：垂直滑动
+          physics: const BouncingScrollPhysics(), // 物理效果：iOS风格弹性滚动
+          allowImplicitScrolling: true, // 隐式滚动：连续滚动体验
+          children: [
+            // 🍯 支出罐头页面 (index: 0)：绿色针织背景 + 红色主题 + 向下滑动提示
+            JarPageFactory.createExpensePage(provider: provider),
+            
+            // 🍯 综合统计罐头页面 (index: 1, 默认页面)：小猪背景 + 动态主题色 + 无滑动提示
+            JarPageFactory.createComprehensivePage(provider: provider),
+            
+            // 🍯 收入罐头页面 (index: 2)：红色针织背景 + 绿色主题 + 向上滑动提示
+            JarPageFactory.createIncomePage(provider: provider),
+          ],
+        ),
         
-        // 🍯 综合统计罐头页面 (index: 1, 默认页面)：小猪背景 + 动态主题色 + 无滑动提示
-        JarPageFactory.createComprehensivePage(provider: provider),
-        
-        // 🍯 收入罐头页面 (index: 2)：红色针织背景 + 绿色主题 + 向上滑动提示
-        JarPageFactory.createIncomePage(provider: provider),
+        // 顶层：全屏手势检测器，确保任何位置都能触发记录
+        Positioned.fill(
+          child: SwipeDetector(
+            gestureHandler: _gestureHandler,
+            isInputMode: widget.isInputMode,
+            currentPage: _currentPage,
+            onExpenseSwipe: widget.onExpenseSwipe,
+            onIncomeSwipe: widget.onIncomeSwipe,
+            child: Container(
+              color: Colors.transparent, // 透明容器，只捕获手势
+            ),
+          ),
+        ),
       ],
     );
   }
