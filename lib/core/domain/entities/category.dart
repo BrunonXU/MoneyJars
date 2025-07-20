@@ -16,6 +16,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'transaction.dart';
 
+/// 分类类型别名
+typedef CategoryType = TransactionType;
+
 /// 主分类实体
 /// 
 /// 表示收入或支出的主要分类

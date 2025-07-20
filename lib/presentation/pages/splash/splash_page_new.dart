@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/transaction_provider.dart';
+import '../../providers/transaction_provider_new.dart';
 import '../../providers/category_provider.dart';
 import '../../../core/routes/app_routes.dart';
 
@@ -48,7 +48,7 @@ class _SplashPageNewState extends State<SplashPageNew>
   Future<void> _initializeApp() async {
     try {
       // 初始化Provider
-      final transactionProvider = context.read<TransactionProvider>();
+      final transactionProvider = context.read<TransactionProviderNew>();
       final categoryProvider = context.read<CategoryProvider>();
       
       // 加载数据

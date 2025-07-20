@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/transaction_provider.dart';
+import '../../providers/transaction_provider_new.dart';
 import '../../providers/category_provider.dart';
 import '../../widgets/common/bottom_navigation.dart';
 import 'widgets/transaction_list.dart';
@@ -48,7 +48,7 @@ class _HomePageNewState extends State<HomePageNew> {
   }
   
   Widget _buildHomePage() {
-    return Consumer2<TransactionProvider, CategoryProvider>(
+    return Consumer2<TransactionProviderNew, CategoryProvider>(
       builder: (context, transactionProvider, categoryProvider, child) {
         if (transactionProvider.isLoading || categoryProvider.isLoading) {
           return const Center(
@@ -56,7 +56,7 @@ class _HomePageNewState extends State<HomePageNew> {
           );
         }
         
-        if (transactionProvider.error != null) {
+        if (transactionProvider.errorMessage != null) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -68,7 +68,7 @@ class _HomePageNewState extends State<HomePageNew> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  transactionProvider.error!,
+                  transactionProvider.errorMessage!,
                   style: const TextStyle(color: Colors.white),
                 ),
                 const SizedBox(height: 16),
@@ -93,11 +93,7 @@ class _HomePageNewState extends State<HomePageNew> {
             ),
             
             // 操作按钮
-            ActionButtons(
-              onAddTransaction: () {
-                // TODO: 打开添加交易页面
-              },
-            ),
+            const ActionButtons(),
             
             // 交易列表
             Expanded(
@@ -106,8 +102,8 @@ class _HomePageNewState extends State<HomePageNew> {
                 onTransactionTap: (transaction) {
                   // TODO: 打开交易详情
                 },
-                onTransactionDelete: (transaction) {
-                  transactionProvider.deleteTransaction(transaction.id);
+                onTransactionDelete: (transaction) async {
+                  await transactionProvider.deleteTransaction(transaction.id);
                 },
               ),
             ),

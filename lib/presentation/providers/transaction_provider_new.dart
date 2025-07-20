@@ -15,7 +15,7 @@
 import 'package:flutter/material.dart';
 import '../../core/di/service_locator.dart';
 import '../../core/domain/entities/transaction.dart';
-import '../../core/domain/repositories/transaction_repository.dart';
+import '../../core/domain/repositories/transaction_repository_simple.dart';
 import '../../core/domain/repositories/category_repository.dart';
 
 /// 交易记录状态管理器
@@ -81,7 +81,7 @@ class TransactionProviderNew extends ChangeNotifier {
         filtered = filtered.where((tx) => tx.type == TransactionType.expense).toList();
         break;
       case TransactionFilter.comprehensive:
-        filtered = filtered.where((tx) => tx.type == TransactionType.comprehensive).toList();
+        // filtered = filtered.where((tx) => tx.type == TransactionType.comprehensive).toList();
         break;
       case TransactionFilter.today:
         final today = DateTime.now();
@@ -147,9 +147,10 @@ class TransactionProviderNew extends ChangeNotifier {
   
   /// 总综合
   double get totalComprehensive {
-    return _transactions
-        .where((tx) => tx.type == TransactionType.comprehensive)
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+    // return _transactions
+    //     .where((tx) => tx.type == TransactionType.comprehensive)
+    //     .fold(0.0, (sum, tx) => sum + tx.amount);
+    return 0.0;
   }
   
   /// 净收入（收入 - 支出）

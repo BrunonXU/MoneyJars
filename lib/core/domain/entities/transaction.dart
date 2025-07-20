@@ -20,6 +20,8 @@ enum TransactionType {
   income,
   /// 支出
   expense,
+  /// 综合
+  comprehensive,
 }
 
 /// 交易实体类
@@ -67,6 +69,24 @@ class Transaction extends Equatable {
   
   /// 标签列表
   final List<String> tags;
+  
+  /// 附件列表（图片路径等）
+  final List<String> attachments;
+  
+  /// 地理位置信息
+  final String? location;
+  
+  /// 用户ID（为多用户预留）
+  final String userId;
+  
+  /// 设备ID（用于同步）
+  final String? deviceId;
+  
+  /// 最后同步时间
+  final DateTime? syncedAt;
+  
+  /// 扩展元数据
+  final Map<String, dynamic>? metadata;
 
   const Transaction({
     required this.id,
@@ -83,6 +103,12 @@ class Transaction extends Equatable {
     this.isArchived = false,
     this.notes,
     this.tags = const [],
+    this.attachments = const [],
+    this.location,
+    this.userId = 'default_user',
+    this.deviceId,
+    this.syncedAt,
+    this.metadata,
   });
 
   /// 验证交易数据是否有效
@@ -136,6 +162,12 @@ class Transaction extends Equatable {
     bool? isArchived,
     String? notes,
     List<String>? tags,
+    List<String>? attachments,
+    String? location,
+    String? userId,
+    String? deviceId,
+    DateTime? syncedAt,
+    Map<String, dynamic>? metadata,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -152,6 +184,12 @@ class Transaction extends Equatable {
       isArchived: isArchived ?? this.isArchived,
       notes: notes ?? this.notes,
       tags: tags ?? this.tags,
+      attachments: attachments ?? this.attachments,
+      location: location ?? this.location,
+      userId: userId ?? this.userId,
+      deviceId: deviceId ?? this.deviceId,
+      syncedAt: syncedAt ?? this.syncedAt,
+      metadata: metadata ?? this.metadata,
     );
   }
 
@@ -171,5 +209,11 @@ class Transaction extends Equatable {
     isArchived,
     notes,
     tags,
+    attachments,
+    location,
+    userId,
+    deviceId,
+    syncedAt,
+    metadata,
   ];
 }

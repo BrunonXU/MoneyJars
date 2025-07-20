@@ -12,7 +12,7 @@
  * - 分类使用次数自动统计
  */
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' hide Category;
 import '../../domain/entities/category.dart';
 import '../../domain/repositories/category_repository.dart';
 import '../datasources/local/hive_datasource.dart';

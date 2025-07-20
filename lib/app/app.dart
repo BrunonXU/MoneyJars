@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../core/di/service_locator.dart';
-import '../presentation/providers/transaction_provider.dart';
+import '../presentation/providers/transaction_provider_new.dart';
 import '../presentation/providers/category_provider.dart';
 import '../presentation/pages/splash/splash_page_new.dart';
 import '../core/theme/app_theme.dart';
@@ -34,7 +34,7 @@ class MoneyJarsApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => TransactionProvider(
+          create: (_) => TransactionProviderNew(
             transactionRepository: serviceLocator.transactionRepository,
           ),
         ),
