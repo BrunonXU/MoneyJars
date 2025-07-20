@@ -337,7 +337,7 @@ class CategoryProvider extends ChangeNotifier {
       
       // 更新子分类列表
       final subCategories = category.subCategories.map((sub) {
-        if (sub.id == subCategory.id) {
+        if (sub.name == subCategory.name) {
           return subCategory;
         }
         return sub;
@@ -384,7 +384,7 @@ class CategoryProvider extends ChangeNotifier {
       
       // 移除子分类
       final subCategories = category.subCategories
-          .where((sub) => sub.id != subCategoryId)
+          .where((sub) => sub.name != subCategoryId)
           .toList();
       
       // 创建更新后的分类

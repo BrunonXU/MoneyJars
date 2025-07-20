@@ -31,7 +31,7 @@ class AppRoutes {
           builder: (_) => const StatisticsPage(),
         );
         
-      case settings:
+      case AppRoutes.settings:
         return MaterialPageRoute(
           builder: (_) => const SettingsPage(),
         );

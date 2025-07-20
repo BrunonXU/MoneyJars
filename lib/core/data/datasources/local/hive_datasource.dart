@@ -18,6 +18,7 @@ import '../../models/transaction_model.dart';
 import '../../models/category_model.dart';
 import '../../models/jar_settings_model.dart';
 import '../../../domain/entities/transaction.dart';
+import './default_categories.dart';
 
 /// 本地数据源抽象接口
 /// 
@@ -85,6 +86,31 @@ abstract class LocalDataSource {
   
   /// 保存罐头设置
   Future<void> saveJarSettings(JarSettingsModel settings);
+  
+  // ===== 通用键值操作 =====
+  
+  /// 获取值
+  Future<dynamic> getValue(String key);
+  
+  /// 设置值
+  Future<void> setValue(String key, dynamic value);
+  
+  /// 删除值
+  Future<void> deleteValue(String key);
+  
+  // ===== 便捷方法别名 =====
+  
+  /// 获取单个交易（别名）
+  Future<TransactionModel?> getTransaction(String id);
+  
+  /// 保存交易（别名）
+  Future<void> saveTransaction(TransactionModel transaction);
+  
+  /// 获取单个分类
+  Future<CategoryModel?> getCategory(String id);
+  
+  /// 保存分类（别名）
+  Future<void> saveCategory(CategoryModel category);
   
   // ===== 数据导入导出 =====
   
@@ -466,6 +492,46 @@ class HiveLocalDataSource implements LocalDataSource {
       }
     }
   }
+  
+  // ===== 通用键值操作实现 =====
+  
+  @override
+  Future<dynamic> getValue(String key) async {
+    final box = await Hive.openBox('app_settings');
+    return box.get(key);
+  }
+  
+  @override
+  Future<void> setValue(String key, dynamic value) async {
+    final box = await Hive.openBox('app_settings');
+    await box.put(key, value);
+  }
+  
+  @override
+  Future<void> deleteValue(String key) async {
+    final box = await Hive.openBox('app_settings');
+    await box.delete(key);
+  }
+  
+  // ===== 便捷方法实现 =====
+  
+  @override
+  Future<TransactionModel?> getTransaction(String id) => getTransactionById(id);
+  
+  @override
+  Future<void> saveTransaction(TransactionModel transaction) => addTransaction(transaction);
+  
+  @override
+  Future<CategoryModel?> getCategory(String id) async {
+    _ensureInitialized();
+    
+    return _categoriesBox!.values
+        .where((cat) => cat.id == id)
+        .firstOrNull;
+  }
+  
+  @override
+  Future<void> saveCategory(CategoryModel category) => addCategory(category);
   
   @override
   Future<void> clearAllData() async {

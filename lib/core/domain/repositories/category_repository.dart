@@ -57,6 +57,9 @@ abstract class CategoryRepository {
   /// 检查分类是否被使用
   Future<bool> isCategoryInUse(String categoryId);
   
+  /// 切换分类启用状态
+  Future<void> toggleCategoryStatus(String categoryId);
+  
   /// 获取默认分类
   Future<Category> getDefaultCategory(CategoryType type);
   

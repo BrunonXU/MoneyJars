@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../../../core/domain/entities/category.dart';
+import '../../../core/domain/entities/transaction.dart';
 
 /// 分类饼图组件
 class CategoryPieChartWidget extends StatefulWidget {
@@ -295,11 +296,14 @@ class _CategoryPieChartWidgetState extends State<CategoryPieChartWidget> {
         id: '',
         name: categoryName,
         type: TransactionType.expense,
-        icon: 'shopping_cart',
+        icon: '🛒',
         color: Colors.grey.value,
         userId: '',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        subCategories: [],
+        isSystem: false,
+        isEnabled: true,
       ),
     );
     

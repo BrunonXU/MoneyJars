@@ -170,6 +170,14 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }
   
   @override
+  Future<void> toggleCategoryStatus(String categoryId) async {
+    final category = await getCategoryById(categoryId);
+    if (category != null) {
+      await updateCategory(category.copyWith(isEnabled: !category.isEnabled));
+    }
+  }
+  
+  @override
   Future<void> clearAllCategories() async {
     final categories = await getAllCategories();
     for (final cat in categories) {

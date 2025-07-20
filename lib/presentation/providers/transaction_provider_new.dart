@@ -13,6 +13,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import '../../core/di/service_locator.dart';
 import '../../core/domain/entities/transaction.dart';
 import '../../core/domain/repositories/transaction_repository_simple.dart';
@@ -301,7 +302,7 @@ class TransactionProviderNew extends ChangeNotifier {
       subCategoryId: transaction.subCategoryId,
       subCategoryName: transaction.subCategoryName,
       date: transaction.date,
-      createTime: transaction.createTime,
+      createdAt: transaction.createdAt,
       type: transaction.type,
       isArchived: true,
       updatedAt: DateTime.now(),
@@ -403,12 +404,17 @@ class TransactionProviderNew extends ChangeNotifier {
   
   void _setLoading(bool loading) {
     _isLoading = loading;
-    notifyListeners();
+    // 延迟通知，避免在build过程中调用
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
   
   void _setError(String message) {
     _errorMessage = message;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
   
   void _clearError() {

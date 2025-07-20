@@ -25,7 +25,10 @@ class _SplashPageNewState extends State<SplashPageNew>
   void initState() {
     super.initState();
     _initializeAnimations();
-    _initializeApp();
+    // 使用addPostFrameCallback避免在build过程中调用setState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeApp();
+    });
   }
 
   void _initializeAnimations() {
