@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'providers/transaction_provider.dart';
 import 'screens/home_screen.dart';
 import 'constants/app_constants.dart';
-import 'widgets/common/loading_widget.dart';
+// Loading widget import removed - not needed in main
 import 'widgets/common/error_widget.dart';
 import 'utils/env_check.dart';
 

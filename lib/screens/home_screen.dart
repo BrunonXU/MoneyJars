@@ -58,13 +58,14 @@ import '../widgets/gesture_handler.dart';
 import '../widgets/common/loading_widget.dart';
 import '../widgets/common/error_widget.dart';
 import '../screens/jar_detail_page.dart';
-import '../screens/settings_page.dart';
+// Settings page removed - now in sidebar
 import '../screens/help_page.dart';
 import '../screens/statistics_page.dart';
 import '../screens/personalization_page.dart';
 import '../constants/app_constants.dart';
 import '../utils/responsive_layout.dart';
 import '../screens/home_screen_content.dart';
+import '../utils/modern_ui_styles.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -80,8 +81,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // ===== 🎭 动画控制器系统 =====
   late AnimationController _fadeController;    // 页面淡入动画控制器：控制整个页面的淡入效果
   late AnimationController _swipeHintController; // 滑动提示动画控制器：控制提示框的呼吸动画(1秒周期，反向重复)
+  late AnimationController _navBarController;  // 导航栏动画控制器：控制导航栏的滑入效果
+  late AnimationController _pageTransitionController; // 页面过渡动画控制器：控制页面切换时的动画
+  
   late Animation<double> _fadeAnimation;       // 淡入动画：0.0→1.0 渐变，使用curveDefault曲线
   late Animation<double> _swipeHintAnimation;  // 提示动画：0.5→1.0 循环变化，用于呼吸效果
+  late Animation<Offset> _leftNavSlideAnimation; // 左导航栏滑入动画
+  late Animation<Offset> _rightNavSlideAnimation; // 右导航栏滑入动画
+  late Animation<double> _pageScaleAnimation;  // 页面缩放动画
   
   // ===== 📱 页面状态管理 =====
   int _currentPage = 1;                        // 当前页面索引：0=支出罐头, 1=综合罐头(默认), 2=收入罐头
@@ -119,6 +126,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       vsync: this,                             // 同步信号：优化性能
     );
     
+    // 🎪 导航栏动画控制器：控制导航栏滑入效果
+    _navBarController = AnimationController(
+      duration: ModernUIStyles.longAnimationDuration,
+      vsync: this,
+    );
+    
+    // 🎬 页面过渡动画控制器：控制页面切换动画
+    _pageTransitionController = AnimationController(
+      duration: ModernUIStyles.mediumAnimationDuration,
+      vsync: this,
+    );
+    
     // 🎨 淡入动画：从完全透明(0.0)到完全不透明(1.0)
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: AppConstants.curveDefault), // 使用默认缓动曲线
@@ -126,8 +145,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     
     // 💡 提示呼吸动画：从半透明(0.5)到不透明(1.0)循环变化
     _swipeHintAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _swipeHintController, curve: AppConstants.curveDefault), // 平滑的呼吸效果
+      CurvedAnimation(
+        parent: _swipeHintController, 
+        curve: Curves.easeInOut, // 更平滑的呼吸效果
+      ),
     );
+    
+    // 🎯 左导航栏滑入动画：从左侧滑入
+    _leftNavSlideAnimation = Tween<Offset>(
+      begin: const Offset(-1.0, 0.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _navBarController,
+      curve: ModernUIStyles.bounceCurve,
+    ));
+    
+    // 🎯 右导航栏滑入动画：从右侧滑入
+    _rightNavSlideAnimation = Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _navBarController,
+      curve: ModernUIStyles.bounceCurve,
+    ));
+    
+    // 📐 页面缩放动画：页面切换时的缩放效果
+    _pageScaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _pageTransitionController,
+      curve: ModernUIStyles.smoothCurve,
+    ));
   }
 
   /// 🚀 启动动画系统
@@ -135,6 +184,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _startAnimations() {
     _fadeController.forward();                 // 启动淡入动画：页面从透明到不透明
     _swipeHintController.repeat(reverse: true); // 启动呼吸动画：反向重复(0.5↔1.0循环)
+    
+    // 延迟启动导航栏动画，创造层次感
+    Future.delayed(ModernUIStyles.shortAnimationDuration, () {
+      if (mounted) {
+        _navBarController.forward();
+      }
+    });
+    
+    _pageTransitionController.forward();
   }
 
   @override
@@ -142,6 +200,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _pageController.dispose();                 // 释放PageView控制器：防止内存泄漏
     _fadeController.dispose();                 // 释放淡入动画控制器
     _swipeHintController.dispose();            // 释放提示动画控制器
+    _navBarController.dispose();               // 释放导航栏动画控制器
+    _pageTransitionController.dispose();       // 释放页面过渡动画控制器
     super.dispose();
   }
 
@@ -149,6 +209,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   /// 当PageView滚动到新页面时触发，更新当前页面状态并退出输入模式
   void _onPageChanged(int page) {
     if (_currentPage != page) {
+      // 触发页面切换动画
+      _pageTransitionController.reset();
+      _pageTransitionController.forward();
+      
       setState(() {
         _currentPage = page;                   // 更新当前页面索引：0=支出, 1=综合, 2=收入
         _isInputMode = false;                  // 退出输入模式：隐藏EnhancedTransactionInput覆盖层
@@ -229,24 +293,116 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // ===== 🧭 左侧导航栏功能页面导航方法 =====
   
-  /// ⚙️ 导航到设置页面
+  /// ⚙️ 打开设置侧边栏
   /// 左侧导航栏第1个按钮(Icons.settings)的点击回调
   void _navigateToSettings() {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const SettingsPage(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: animation.drive(
-              Tween(begin: const Offset(-1.0, 0.0), end: Offset.zero) // 从左侧滑入：(-1.0,0.0)→(0,0)
-                  .chain(CurveTween(curve: AppConstants.curveSmooth)),  // 平滑滑动曲线
+    _showSettingsDrawer();
+  }
+  
+  /// 显示设置侧边栏
+  void _showSettingsDrawer() {
+    showGeneralDialog(
+      context: context,
+      barrierLabel: 'Settings',
+      barrierDismissible: true,
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: 350,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                color: ModernUIStyles.cardBackgroundColor,
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // 标题栏
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          ModernUIStyles.accentColor.withOpacity(0.8),
+                          ModernUIStyles.accentColor.withOpacity(0.6),
+                        ],
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    child: SafeArea(
+                      bottom: false,
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.settings,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            '设置',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.white),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // 设置内容
+                  Expanded(
+                    child: _buildSettingsContent(),
+                  ),
+                ],
+              ),
             ),
-            child: child,
-          );
-        },
-        transitionDuration: AppConstants.animationMedium, // 中等动画时长
-      ),
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(-1, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          )),
+          child: child,
+        );
+      },
     );
   }
 
@@ -309,6 +465,426 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           );
         },
         transitionDuration: AppConstants.animationMedium,
+      ),
+    );
+  }
+
+  /// 构建设置内容
+  Widget _buildSettingsContent() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _buildSettingsSection(
+          title: '外观',
+          children: [
+            _buildThemeToggleTile(),
+          ],
+        ),
+        const SizedBox(height: 20),
+        _buildSettingsSection(
+          title: '数据管理',
+          children: [
+            _buildDataExportTile(),
+            _buildDataBackupTile(),
+            _buildDataClearTile(),
+          ],
+        ),
+        const SizedBox(height: 20),
+        _buildSettingsSection(
+          title: '分类管理',
+          children: [
+            _buildCategoryManagementTile(),
+            _buildDefaultCategoriesTile(),
+          ],
+        ),
+        const SizedBox(height: 20),
+        _buildSettingsSection(
+          title: '关于',
+          children: [
+            _buildAboutTile(),
+            _buildVersionTile(),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  /// 构建设置区块
+  Widget _buildSettingsSection({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: ModernUIStyles.cardBackgroundColor.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: ModernUIStyles.accentColor.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              title,
+              style: TextStyle(
+                color: ModernUIStyles.accentColor,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Divider(
+            height: 1,
+            color: ModernUIStyles.accentColor.withOpacity(0.2),
+          ),
+          ...children,
+        ],
+      ),
+    );
+  }
+  
+  /// 主题切换项
+  Widget _buildThemeToggleTile() {
+    return ListTile(
+      leading: Icon(
+        Icons.dark_mode,
+        color: ModernUIStyles.accentColor.withOpacity(0.7),
+      ),
+      title: const Text(
+        '深色模式',
+        style: TextStyle(color: Colors.white),
+      ),
+      subtitle: const Text(
+        '已启用深色主题',
+        style: TextStyle(color: Colors.white60),
+      ),
+      trailing: Switch(
+        value: true,
+        onChanged: (value) {
+          // TODO: 实现主题切换
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('主题切换功能即将推出'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        },
+        activeColor: ModernUIStyles.accentColor,
+      ),
+    );
+  }
+  
+  /// 数据导出项
+  Widget _buildDataExportTile() {
+    return ListTile(
+      leading: Icon(
+        Icons.file_download,
+        color: ModernUIStyles.accentColor.withOpacity(0.7),
+      ),
+      title: const Text(
+        '导出数据',
+        style: TextStyle(color: Colors.white),
+      ),
+      subtitle: const Text(
+        '导出交易记录为CSV格式',
+        style: TextStyle(color: Colors.white60),
+      ),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.white30,
+        size: 16,
+      ),
+      onTap: () async {
+        Navigator.pop(context); // 关闭侧边栏
+        // TODO: 实现数据导出功能
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('数据导出功能开发中'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      },
+    );
+  }
+  
+  /// 数据备份项
+  Widget _buildDataBackupTile() {
+    return ListTile(
+      leading: Icon(
+        Icons.backup,
+        color: ModernUIStyles.accentColor.withOpacity(0.7),
+      ),
+      title: const Text(
+        '备份与恢复',
+        style: TextStyle(color: Colors.white),
+      ),
+      subtitle: const Text(
+        '创建本地备份或恢复数据',
+        style: TextStyle(color: Colors.white60),
+      ),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.white30,
+        size: 16,
+      ),
+      onTap: () {
+        Navigator.pop(context); // 关闭侧边栏
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('备份功能开发中'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      },
+    );
+  }
+  
+  /// 清除数据项
+  Widget _buildDataClearTile() {
+    return ListTile(
+      leading: Icon(
+        Icons.delete_forever,
+        color: Colors.red.withOpacity(0.7),
+      ),
+      title: const Text(
+        '清除所有数据',
+        style: TextStyle(color: Colors.red),
+      ),
+      subtitle: const Text(
+        '删除所有交易记录（不可恢复）',
+        style: TextStyle(color: Color(0xFFEF9A9A)), // Colors.red.shade200
+      ),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.white30,
+        size: 16,
+      ),
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: ModernUIStyles.cardBackgroundColor,
+            title: const Text(
+              '确认清除数据',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: const Text(
+              '此操作将删除所有交易记录，且无法恢复。是否继续？',
+              style: TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('取消'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.pop(context); // 关闭侧边栏
+                  // TODO: 实现清除数据功能
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('数据已清除'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                },
+                child: const Text(
+                  '确认清除',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+  
+  /// 分类管理项
+  Widget _buildCategoryManagementTile() {
+    return ListTile(
+      leading: Icon(
+        Icons.category,
+        color: ModernUIStyles.accentColor.withOpacity(0.7),
+      ),
+      title: const Text(
+        '分类管理',
+        style: TextStyle(color: Colors.white),
+      ),
+      subtitle: const Text(
+        '编辑和管理交易分类',
+        style: TextStyle(color: Colors.white60),
+      ),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.white30,
+        size: 16,
+      ),
+      onTap: () {
+        Navigator.pop(context); // 关闭侧边栏
+        // TODO: 导航到分类管理页面
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('分类管理功能开发中'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      },
+    );
+  }
+  
+  /// 默认分类项
+  Widget _buildDefaultCategoriesTile() {
+    return ListTile(
+      leading: Icon(
+        Icons.restore,
+        color: ModernUIStyles.accentColor.withOpacity(0.7),
+      ),
+      title: const Text(
+        '恢复默认分类',
+        style: TextStyle(color: Colors.white),
+      ),
+      subtitle: const Text(
+        '重置为系统默认的分类列表',
+        style: TextStyle(color: Colors.white60),
+      ),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.white30,
+        size: 16,
+      ),
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: ModernUIStyles.cardBackgroundColor,
+            title: const Text(
+              '恢复默认分类',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: const Text(
+              '此操作将重置所有分类为系统默认，自定义分类将被删除。是否继续？',
+              style: TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('取消'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.pop(context); // 关闭侧边栏
+                  // TODO: 实现恢复默认分类功能
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('已恢复默认分类'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+                child: const Text('确认恢复'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+  
+  /// 关于项
+  Widget _buildAboutTile() {
+    return ListTile(
+      leading: Icon(
+        Icons.info_outline,
+        color: ModernUIStyles.accentColor.withOpacity(0.7),
+      ),
+      title: const Text(
+        '关于MoneyJars',
+        style: TextStyle(color: Colors.white),
+      ),
+      subtitle: const Text(
+        '了解更多关于此应用',
+        style: TextStyle(color: Colors.white60),
+      ),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.white30,
+        size: 16,
+      ),
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: ModernUIStyles.cardBackgroundColor,
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: ModernUIStyles.accentColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.account_balance_wallet,
+                    color: ModernUIStyles.accentColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'MoneyJars',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+            content: const Text(
+              'MoneyJars 是一款创新的记账应用，'
+              '采用独特的拖拽式交互设计，'
+              '让记账变得简单有趣。\n\n'
+              '特色功能：\n'
+              '• 创新的拖拽快速记账\n'
+              '• 直观的三罐头布局\n'
+              '• 智能分类管理\n'
+              '• 实时数据统计\n'
+              '• 优雅的动画效果\n\n'
+              '让理财成为一种享受！',
+              style: TextStyle(color: Colors.white70, height: 1.5),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(
+                  '确定',
+                  style: TextStyle(color: ModernUIStyles.accentColor),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+  
+  /// 版本信息项
+  Widget _buildVersionTile() {
+    return ListTile(
+      leading: Icon(
+        Icons.code,
+        color: ModernUIStyles.accentColor.withOpacity(0.7),
+      ),
+      title: const Text(
+        '版本信息',
+        style: TextStyle(color: Colors.white),
+      ),
+      subtitle: const Text(
+        'v2.0.0 (新架构版本)',
+        style: TextStyle(color: Colors.white60),
       ),
     );
   }
@@ -515,7 +1091,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               // ⚙️ 左侧设置按钮：带阴影的图标按钮
               Padding(
                 padding: EdgeInsets.only(left: AppConstants.spacingMedium.w), // 左边距：中等间距
-                child: IconButton(
+                child: _AnimatedIconButton(
                   icon: Container(
                     padding: EdgeInsets.all(AppConstants.spacingSmall.w), // 图标内边距：小间距
                     decoration: BoxDecoration(
@@ -644,21 +1220,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Positioned(
           left: 2.w,                                         // 左侧位置：几乎贴左边缘，只留2px白边
           top: MediaQuery.of(context).size.height * 0.32,   // 垂直位置：调整为32%避免溢出
-          child: Container(
-            width: 48.w,                                     // 容器宽度：48逻辑像素(原42增大15%)
-            padding: EdgeInsets.symmetric(vertical: 16.h),   // 垂直内边距：减少为16逻辑像素避免溢出
-            decoration: BoxDecoration(
-              color: Colors.white,                           // 背景颜色：白色
-              borderRadius: BorderRadius.circular(24.r),     // 圆角半径：24逻辑像素(原21增大15%)
-              boxShadow: [                                   // 阴影效果：单一阴影
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),     // 阴影颜色：10%透明黑色
-                  blurRadius: 8.r,                          // 模糊半径：8逻辑像素(原7增大15%)
-                  offset: Offset(0, 1.6.h),                 // 阴影偏移：向下1.6逻辑像素(原1.4增大15%)
-                ),
-              ],
+          child: SlideTransition(
+            position: _leftNavSlideAnimation,
+            child: AnimatedContainer(
+              duration: ModernUIStyles.shortAnimationDuration,
+              width: 48.w,                                     // 容器宽度：48逻辑像素(原42增大15%)
+              padding: EdgeInsets.symmetric(vertical: 16.h),   // 垂直内边距：减少为16逻辑像素避免溢出
+              decoration: ModernUIStyles.glassDecoration.copyWith(
+                color: ModernUIStyles.cardBackgroundColor.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(24.r),
+              ),
+              child: _buildLeftNavBar(),                       // 左导航栏内容：4个功能按钮(设置/帮助/统计/个性化)
             ),
-            child: _buildLeftNavBar(),                       // 左导航栏内容：4个功能按钮(设置/帮助/统计/个性化)
           ),
         ),
         
@@ -666,21 +1239,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Positioned(
           right: 2.w,                                        // 右侧位置：几乎贴右边缘，只留2px白边
           top: MediaQuery.of(context).size.height * 0.32,   // 垂直位置：调整为32%与左导航栏对齐
-          child: Container(
-            width: 48.w,                                     // 容器宽度：48逻辑像素(与左导航栏相同)
-            padding: EdgeInsets.symmetric(vertical: 16.h),   // 垂直内边距：减少为16逻辑像素避免溢出
-            decoration: BoxDecoration(
-              color: Colors.white,                           // 背景颜色：白色
-              borderRadius: BorderRadius.circular(26.r),     // 圆角半径：26逻辑像素(与左导航栏相同)
-              boxShadow: [                                   // 阴影效果：与左导航栏相同的阴影
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),     // 阴影颜色：10%透明黑色
-                  blurRadius: 8.r,                          // 模糊半径：8逻辑像素(增大15%)
-                  offset: Offset(0, 1.6.h),                 // 阴影偏移：向下1.6逻辑像素(增大15%)
-                ),
-              ],
+          child: SlideTransition(
+            position: _rightNavSlideAnimation,
+            child: AnimatedContainer(
+              duration: ModernUIStyles.shortAnimationDuration,
+              width: 48.w,                                     // 容器宽度：48逻辑像素(与左导航栏相同)
+              padding: EdgeInsets.symmetric(vertical: 16.h),   // 垂直内边距：减少为16逻辑像素避免溢出
+              decoration: ModernUIStyles.glassDecoration.copyWith(
+                color: ModernUIStyles.cardBackgroundColor.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(26.r),
+              ),
+              child: _buildPageIndicators(),                   // 右指示器内容：页面圆点指示器
             ),
-            child: _buildPageIndicators(),                   // 右指示器内容：页面圆点指示器
           ),
         ),
         
@@ -714,21 +1284,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   /// 🔘 左导航栏单个图标按钮构建器
   /// 创建带背景和点击交互的图标按钮
   Widget _buildLeftNavIcon(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,                                    // 点击回调：执行对应的导航方法
-      child: Container(
-        width: 28.w,                                   // 按钮宽度：28逻辑像素(增大15%)
-        height: 28.h,                                  // 按钮高度：28逻辑像素(增大15%)
-        decoration: BoxDecoration(
-          color: Colors.grey[100],                     // 背景颜色：浅灰色(#F5F5F5)
-          borderRadius: BorderRadius.circular(7.r),    // 圆角半径：7逻辑像素(增大15%)
-        ),
-        child: Icon(
-          icon,                                        // 图标：传入的IconData(如Icons.settings)
-          color: Colors.grey[600],                     // 图标颜色：中灰色(#757575)
-          size: 18.sp,                                 // 图标尺寸：18逻辑像素(增大15%)
-        ),
-      ),
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 1.0, end: 1.0),
+      duration: ModernUIStyles.shortAnimationDuration,
+      builder: (context, scale, child) {
+        return GestureDetector(
+          onTapDown: (details) {
+            setState(() {});
+          },
+          onTapUp: (details) {
+            onTap();
+            setState(() {});
+          },
+          onTapCancel: () {
+            setState(() {});
+          },
+          child: AnimatedScale(
+            scale: scale,
+            duration: ModernUIStyles.shortAnimationDuration,
+            child: AnimatedContainer(
+              duration: ModernUIStyles.shortAnimationDuration,
+              width: 28.w,                                   // 按钮宽度：28逻辑像素(增大15%)
+              height: 28.h,                                  // 按钮高度：28逻辑像素(增大15%)
+              decoration: BoxDecoration(
+                color: ModernUIStyles.cardBackgroundColor.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(
+                  color: ModernUIStyles.accentColor.withOpacity(0.2),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: ModernUIStyles.accentColor.withOpacity(0.2),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                icon,                                        // 图标：传入的IconData(如Icons.settings)
+                color: Colors.white.withOpacity(0.8),
+                size: 18.sp,                                 // 图标尺寸：18逻辑像素(增大15%)
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -750,31 +1351,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   /// 包含圆点状态 + 文字标签，根据当前页面高亮显示
   Widget _buildPageIndicator(int index, String label) {
     final isActive = _currentPage == index;               // 是否为当前活跃页面
-    return Container(
+    return AnimatedContainer(
+      duration: ModernUIStyles.mediumAnimationDuration,   // 动画时长：300ms
+      curve: ModernUIStyles.defaultCurve,                 // 动画曲线：缓入缓出
       child: Column(
         children: [
-          // ⚪ 状态圆点：活跃时为主题色，非活跃时为半透明灰色
-          Container(
-            width: 8.w,                                   // 圆点宽度：8逻辑像素
-            height: 8.h,                                  // 圆点高度：8逻辑像素
+          // ⚪ 状态圆点：活跃时放大并发光
+          AnimatedContainer(
+            duration: ModernUIStyles.mediumAnimationDuration,
+            width: isActive ? 12.w : 8.w,                 // 圆点宽度：活跃时12，非活跃时8
+            height: isActive ? 12.h : 8.h,                // 圆点高度：活跃时12，非活跃时8
             decoration: BoxDecoration(
               color: isActive                             // 动态颜色：
                   ? AppConstants.primaryColor             // 活跃状态：主题蓝色
                   : Colors.grey.withOpacity(0.5),        // 非活跃状态：50%透明灰色
               shape: BoxShape.circle,                     // 形状：正圆形
+              boxShadow: isActive ? [                     // 活跃时发光效果
+                BoxShadow(
+                  color: AppConstants.primaryColor.withOpacity(0.6),
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                ),
+              ] : null,
             ),
           ),
           SizedBox(height: 2.h),                          // 圆点与文字间距：2逻辑像素
-          // 🏷️ 页面标签：显示"支出"/"综合"/"收入"文字
-          Text(
-            label,                                        // 标签文字：从AppConstants获取
+          // 🏷️ 页面标签：动画文字过渡
+          AnimatedDefaultTextStyle(
+            duration: ModernUIStyles.shortAnimationDuration,
             style: TextStyle(
               color: isActive                             // 动态颜色：
                   ? AppConstants.primaryColor             // 活跃状态：主题蓝色
                   : Colors.grey.withOpacity(0.7),        // 非活跃状态：70%透明灰色
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal, // 活跃时加粗
-              fontSize: 8.sp,                             // 字体大小：8逻辑像素(小号文字)
+              fontSize: isActive ? 10.sp : 8.sp,          // 字体大小：活跃时稍大
             ),
+            child: Text(label),                           // 标签文字：从AppConstants获取
           ),
         ],
       ),
@@ -877,18 +1489,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       vertical: AppConstants.spacingXSmall.h,   // 垂直内边距：超小间距
                     ),
                 decoration: BoxDecoration(
-                  color: AppConstants.backgroundColor,   // 背景颜色：白色
-                  borderRadius: BorderRadius.circular(AppConstants.radiusLarge.r), // 圆角：大圆角
-                  boxShadow: [                            // 阴影效果：轻微阴影
+                  color: ModernUIStyles.cardBackgroundColor.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusLarge.r),
+                  boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05), // 阴影颜色：5%透明黑色(减少阴影)
-                      blurRadius: 5.r,                    // 模糊半径：5逻辑像素
-                      offset: Offset(0, 2.h),             // 阴影偏移：向下2逻辑像素
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 8.r,
+                      offset: Offset(0, 4.h),
+                    ),
+                    // 发光效果
+                    BoxShadow(
+                      color: color.withOpacity(0.3 * _swipeHintAnimation.value),
+                      blurRadius: 20.r,
+                      spreadRadius: 2.r,
                     ),
                   ],
-                  border: Border.all(                     // 边框：主题色边框
-                    color: color.withOpacity(0.3),       // 边框颜色：主题色30%透明度
-                    width: 1.w,                           // 边框宽度：1逻辑像素
+                  border: Border.all(
+                    color: color.withOpacity(0.5),
+                    width: 1.5,
                   ),
                 ),
                 child: Row(                               // 水平布局：图标 + 文字
@@ -898,8 +1516,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Container(                            // 🔵 图标容器：圆形背景 + 箭头图标
                       padding: EdgeInsets.all(AppConstants.spacingXSmall.w), // 图标内边距：超小间距
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.15),   // 背景颜色：主题色15%透明度
-                        shape: BoxShape.circle,            // 形状：正圆形
+                        color: color.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: color.withOpacity(0.2),
+                            blurRadius: 4,
+                            spreadRadius: 1,
+                          ),
+                        ],
                       ),
                       child: Icon(
                         isExpense ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up, // 箭头图标：支出向下，收入向上
@@ -910,10 +1535,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     SizedBox(width: AppConstants.spacingXSmall.w), // 图标与文字间距：超小间距
                     Text(                                 // 📝 提示文字：滑动方向说明
                       isExpense ? AppConstants.hintSwipeDown : AppConstants.hintSwipeUp, // 提示文字：支出"向下滑动"，收入"向上滑动"
-                      style: AppConstants.captionStyle.copyWith( // 文字样式：使用标题样式
-                        color: color,                     // 文字颜色：主题色
-                        fontWeight: FontWeight.w600,      // 字体粗细：半粗体
-                        fontSize: 10.sp,                  // 字体大小：10逻辑像素(进一步减小)
+                      style: AppConstants.captionStyle.copyWith(
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 10.sp,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 2,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -1054,6 +1686,93 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ],
         );
       },
+    );
+  }
+}
+
+// ===== 🎯 自定义动画按钮组件 =====
+/// 带点击缩放动画的图标按钮
+class _AnimatedIconButton extends StatefulWidget {
+  final Widget icon;
+  final VoidCallback onPressed;
+  final String? tooltip;
+
+  const _AnimatedIconButton({
+    Key? key,
+    required this.icon,
+    required this.onPressed,
+    this.tooltip,
+  }) : super(key: key);
+
+  @override
+  State<_AnimatedIconButton> createState() => _AnimatedIconButtonState();
+}
+
+class _AnimatedIconButtonState extends State<_AnimatedIconButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: ModernUIStyles.shortAnimationDuration,
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.85,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    _controller.forward();
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    _controller.reverse();
+  }
+
+  void _handleTapCancel() {
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        widget.onPressed();
+      },
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: widget.tooltip != null
+                ? Tooltip(
+                    message: widget.tooltip!,
+                    child: widget.icon,
+                  )
+                : widget.icon,
+          );
+        },
+      ),
     );
   }
 }

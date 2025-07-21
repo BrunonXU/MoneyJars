@@ -41,6 +41,13 @@ dependencies:
   # 工具库
   intl: ^0.18.1
   uuid: ^4.1.0
+  
+  # 依赖注入
+  get_it: ^7.6.4
+  
+  # 值对象比较
+  equatable: ^2.0.5
+  dartz: ^0.10.1
 
 dev_dependencies:
   flutter_test:

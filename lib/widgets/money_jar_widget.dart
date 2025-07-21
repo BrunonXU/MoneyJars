@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 import '../models/transaction_record_hive.dart';
 import '../providers/transaction_provider.dart';
 import '../constants/app_constants.dart';
+import '../utils/modern_ui_styles.dart';
 
 class MoneyJarWidget extends StatefulWidget {
   final TransactionType type;
@@ -37,34 +38,97 @@ class MoneyJarWidget extends StatefulWidget {
   State<MoneyJarWidget> createState() => _MoneyJarWidgetState();
 }
 
-class _MoneyJarWidgetState extends State<MoneyJarWidget> {
+class _MoneyJarWidgetState extends State<MoneyJarWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _hoverController;
+  late Animation<double> _hoverScaleAnimation;
+  late Animation<double> _hoverGlowAnimation;
+  bool _isHovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _hoverController = AnimationController(
+      duration: ModernUIStyles.shortAnimationDuration,
+      vsync: this,
+    );
+    _hoverScaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.05,
+    ).animate(CurvedAnimation(
+      parent: _hoverController,
+      curve: Curves.easeOutCubic,
+    ));
+    _hoverGlowAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _hoverController,
+      curve: Curves.easeOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _hoverController.dispose();
+    super.dispose();
+  }
+
+  void _handleHover(bool hovering) {
+    setState(() {
+      _isHovered = hovering;
+    });
+    if (hovering) {
+      _hoverController.forward();
+    } else {
+      _hoverController.reverse();
+    }
+  }
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 200,
-      margin: const EdgeInsets.all(8.0),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: InkWell(
-          onTap: widget.onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  _getJarColor().withOpacity(0.1),
-                  _getJarColor().withOpacity(0.05),
-              ],
+    return MouseRegion(
+      onEnter: (_) => _handleHover(true),
+      onExit: (_) => _handleHover(false),
+      child: AnimatedBuilder(
+        animation: _hoverController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _hoverScaleAnimation.value,
+            child: Container(
+              width: double.infinity,
+              height: 200,
+              margin: const EdgeInsets.all(8.0),
+              child: Container(
+        decoration: ModernUIStyles.elevatedCardDecoration.copyWith(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ModernUIStyles.cardBackgroundColor.withOpacity(0.95),
+              ModernUIStyles.cardBackgroundColor.withOpacity(0.85),
+            ],
+          ),
+          border: Border.all(
+            color: _getJarColor().withOpacity(0.5 + (_hoverGlowAnimation.value * 0.3)),
+            width: _isHovered ? 3 : 2,
+          ),
+          boxShadow: [
+            ...ModernUIStyles.elevatedCardDecoration.boxShadow!,
+            if (_isHovered)
+              BoxShadow(
+                color: _getJarColor().withOpacity(0.3 * _hoverGlowAnimation.value),
+                blurRadius: 20,
+                spreadRadius: 2,
               ),
-            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -73,8 +137,15 @@ class _MoneyJarWidgetState extends State<MoneyJarWidget> {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: _getJarColor().withOpacity(0.2),
+                    color: _getJarColor().withOpacity(0.3),
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: _getJarColor().withOpacity(0.3 + (_hoverGlowAnimation.value * 0.3)),
+                        blurRadius: 8 + (_hoverGlowAnimation.value * 4),
+                        spreadRadius: 2 + (_hoverGlowAnimation.value * 2),
+                      ),
+                    ],
                   ),
                   child: Icon(
                     _getJarIcon(),
@@ -117,13 +188,16 @@ class _MoneyJarWidgetState extends State<MoneyJarWidget> {
                     height: 32,
                     child: ElevatedButton(
                       onPressed: widget.onSettings,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _getJarColor(),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-            ),
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      style: ModernUIStyles.primaryButtonStyle.copyWith(
+                        backgroundColor: MaterialStateProperty.all(_getJarColor()),
+                        padding: MaterialStateProperty.all(
+                          const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
                       ),
                       child: const Text(
                         '设置',
@@ -136,6 +210,11 @@ class _MoneyJarWidgetState extends State<MoneyJarWidget> {
             ),
             ),
           ),
+        ),
+      ),
+            ),
+          );
+        },
       ),
     );
   }

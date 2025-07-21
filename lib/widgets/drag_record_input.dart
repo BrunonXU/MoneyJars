@@ -20,6 +20,7 @@ import 'dart:math' as math;
 import '../models/transaction_record_hive.dart';
 import '../providers/transaction_provider.dart';
 import '../constants/app_constants.dart';
+import '../utils/modern_ui_styles.dart';
 
 class DragRecordInput extends StatefulWidget {
   final TransactionType type;
@@ -1488,69 +1489,357 @@ class CreateCategoryDialog extends StatefulWidget {
   State<CreateCategoryDialog> createState() => _CreateCategoryDialogState();
 }
 
-class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
+class _CreateCategoryDialogState extends State<CreateCategoryDialog>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   final _controller = TextEditingController();
   bool _isLoading = false;
+  
+  String _selectedIcon = '📝';
+  Color _selectedColor = Colors.blue;
+  
+  // 预设图标
+  final List<String> _incomeIcons = [
+    '💰', '💵', '💴', '💶', '💷', '💸', '💳', '🏦',
+    '📈', '💹', '🎯', '🏆', '🎁', '🎉', '🎊', '✨',
+  ];
+  
+  final List<String> _expenseIcons = [
+    '🛍️', '🍔', '🚗', '🏠', '✈️', '🎬', '🎮', '📚',
+    '💊', '👔', '💄', '🎓', '🏥', '⚡', '📱', '🎯',
+  ];
+  
+  // 预设颜色
+  final List<Color> _presetColors = [
+    Colors.red,
+    Colors.pink,
+    Colors.purple,
+    Colors.deepPurple,
+    Colors.indigo,
+    Colors.blue,
+    Colors.lightBlue,
+    Colors.cyan,
+    Colors.teal,
+    Colors.green,
+    Colors.lightGreen,
+    Colors.lime,
+    Colors.yellow,
+    Colors.amber,
+    Colors.orange,
+    Colors.deepOrange,
+  ];
+  
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    
+    // 根据类型选择默认图标
+    _selectedIcon = widget.type == TransactionType.income
+        ? _incomeIcons.first
+        : _expenseIcons.first;
+    
+    // 根据类型选择默认颜色
+    _selectedColor = widget.type == TransactionType.income
+        ? AppConstants.incomeColor
+        : AppConstants.expenseColor;
+  }
+  
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(
-        '创建新分类',
-        style: AppConstants.titleStyle.copyWith(
-          color: AppConstants.primaryColor,
-        ),
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _controller,
-            decoration: InputDecoration(
-              hintText: '输入分类名称',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-                borderSide: BorderSide(color: AppConstants.primaryColor),
+      backgroundColor: ModernUIStyles.cardBackgroundColor,
+      child: Container(
+        width: 400,
+        height: 600,
+        decoration: ModernUIStyles.elevatedCardDecoration,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            // 标题
+            Text(
+              '创建新分类',
+              style: ModernUIStyles.headingStyle.copyWith(
+                fontSize: 20,
               ),
             ),
-            autofocus: true,
+            
+            const SizedBox(height: 20),
+            
+            // 预览
+            _buildPreview(),
+            
+            const SizedBox(height: 20),
+            
+            // 标签页
+            TabBar(
+              controller: _tabController,
+              indicatorColor: ModernUIStyles.accentColor,
+              labelColor: Colors.white,
+              tabs: const [
+                Tab(text: '名称'),
+                Tab(text: '图标'),
+                Tab(text: '颜色'),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // 标签页内容
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildNameTab(),
+                  _buildIconTab(),
+                  _buildColorTab(),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // 操作按钮
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ModernUIStyles.secondaryButtonStyle,
+                  child: const Text('取消'),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _createCategory,
+                  style: ModernUIStyles.primaryButtonStyle,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('创建'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 构建预览
+  Widget _buildPreview() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ModernUIStyles.cardBackgroundColor.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: ModernUIStyles.accentColor.withOpacity(0.3),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // 图标
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: _selectedColor.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                _selectedIcon,
+                style: const TextStyle(fontSize: 24),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // 名称
+          Text(
+            _controller.text.isEmpty
+                ? '分类名称'
+                : _controller.text,
+            style: ModernUIStyles.subheadingStyle.copyWith(
+              color: _controller.text.isEmpty
+                  ? Colors.white.withOpacity(0.5)
+                  : Colors.white,
+            ),
           ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            AppConstants.buttonCancel,
-            style: AppConstants.bodyStyle.copyWith(
-              color: AppConstants.textSecondaryColor,
-            ),
+    );
+  }
+  
+  /// 构建名称标签页
+  Widget _buildNameTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '请输入分类名称',
+            style: ModernUIStyles.bodyStyle,
           ),
-        ),
-        ElevatedButton(
-          onPressed: _isLoading ? null : _createCategory,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppConstants.primaryColor,
-            foregroundColor: AppConstants.cardColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            maxLength: 20,
+            style: const TextStyle(color: Colors.white),
+            decoration: ModernUIStyles.inputDecoration(
+              '例如：' + (widget.type == TransactionType.income ? '工资、投资' : '饮食、交通'),
+            ).copyWith(
+              counterStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
             ),
+            onChanged: (_) => setState(() {}),
           ),
-          child: _isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppConstants.cardColor),
+          const SizedBox(height: 8),
+          Text(
+            '名称应简洁明了，便于识别',
+            style: ModernUIStyles.captionStyle,
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 构建图标标签页
+  Widget _buildIconTab() {
+    final icons = widget.type == TransactionType.income
+        ? _incomeIcons
+        : _expenseIcons;
+    
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '选择一个图标',
+            style: ModernUIStyles.bodyStyle,
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: icons.length,
+              itemBuilder: (context, index) {
+                final icon = icons[index];
+                final isSelected = icon == _selectedIcon;
+                
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedIcon = icon;
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? ModernUIStyles.accentColor.withOpacity(0.2)
+                          : ModernUIStyles.cardBackgroundColor.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? ModernUIStyles.accentColor
+                            : ModernUIStyles.accentColor.withOpacity(0.3),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        icon,
+                        style: const TextStyle(fontSize: 28),
+                      ),
+                    ),
                   ),
-                )
-              : Text(AppConstants.buttonCreate),
-        ),
-      ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 构建颜色标签页
+  Widget _buildColorTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '选择分类颜色',
+            style: ModernUIStyles.bodyStyle,
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: _presetColors.length,
+              itemBuilder: (context, index) {
+                final color = _presetColors[index];
+                final isSelected = color == _selectedColor;
+                
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedColor = color;
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.white
+                            : Colors.transparent,
+                        width: 3,
+                      ),
+                    ),
+                    child: isSelected
+                        ? const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                          )
+                        : null,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1569,13 +1858,13 @@ class _CreateCategoryDialogState extends State<CreateCategoryDialog> {
       final category = Category.create(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
-        color: AppConstants.categoryColors[0].value,
-        icon: Icons.category.codePoint.toString(),
+        color: _selectedColor.value,
+        icon: _selectedIcon,
         type: widget.type,
         subCategories: [
           SubCategory.create(
             name: 'default',
-            icon: Icons.category.codePoint.toString(),
+            icon: _selectedIcon,
           ),
         ],
       );
