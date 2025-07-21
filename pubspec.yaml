@@ -29,7 +29,7 @@ dependencies:
   path: ^1.8.3
   
   # 图表可视化
-  fl_chart: ^0.65.0
+  fl_chart: ^1.0.0
   
   # 动画和UI增强
   animations: ^2.0.8
@@ -39,11 +39,11 @@ dependencies:
   flutter_screenutil: ^5.9.0
   
   # 工具库
-  intl: ^0.18.1
+  intl: ^0.20.2
   uuid: ^4.1.0
   
   # 依赖注入
-  get_it: ^7.6.4
+  get_it: ^8.0.3
   
   # 值对象比较
   equatable: ^2.0.5
@@ -54,7 +54,7 @@ dev_dependencies:
     sdk: flutter
   mockito: ^5.4.4
   build_runner: ^2.4.7
-  flutter_lints: ^3.0.0
+  flutter_lints: ^6.0.0
   
   # Hive代码生成
   hive_generator: ^2.0.1
