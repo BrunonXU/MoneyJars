@@ -23,6 +23,7 @@ import '../providers/transaction_provider.dart';
 import '../widgets/common/error_widget.dart';
 import '../widgets/common/loading_widget.dart';
 import '../utils/responsive_layout.dart';
+import '../utils/modern_ui_styles.dart';
 
 class JarDetailPage extends StatefulWidget {
   final TransactionType type;
@@ -347,15 +348,18 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.spacingLarge),
-      decoration: BoxDecoration(
+      decoration: ModernUIStyles.elevatedCardDecoration.copyWith(
         gradient: LinearGradient(
-          colors: AppConstants.cardGradient,
+          colors: [
+            ModernUIStyles.cardBackgroundColor,
+            ModernUIStyles.cardBackgroundColor.withOpacity(0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
-        boxShadow: AppConstants.shadowLarge,
         border: Border.all(
-          color: color.withOpacity(0.2),
-          width: 1,
+          color: color.withOpacity(0.5),
+          width: 2,
         ),
       ),
       child: Column(
@@ -406,10 +410,8 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
     
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppConstants.cardColor,
+      decoration: ModernUIStyles.cardDecoration.copyWith(
         borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
-        boxShadow: AppConstants.shadowMedium,
       ),
       child: Column(
         children: [
@@ -465,12 +467,20 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
         ),
         decoration: BoxDecoration(
           color: _selectedCategory == category 
-              ? color.withOpacity(0.1)
-              : AppConstants.backgroundColor,
+              ? color.withOpacity(0.2)
+              : ModernUIStyles.cardBackgroundColor.withOpacity(0.5),
           borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-          border: _selectedCategory == category
-              ? Border.all(color: color, width: 2)
-              : null,
+          border: Border.all(
+            color: _selectedCategory == category ? color : color.withOpacity(0.3),
+            width: _selectedCategory == category ? 2 : 1,
+          ),
+          boxShadow: _selectedCategory == category ? [
+            BoxShadow(
+              color: color.withOpacity(0.2),
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ] : null,
         ),
         child: Row(
           children: [
@@ -525,10 +535,8 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
         horizontal: AppConstants.spacingLarge,
         vertical: AppConstants.spacingMedium,
       ),
-      decoration: BoxDecoration(
-        color: AppConstants.cardColor,
+      decoration: ModernUIStyles.cardDecoration.copyWith(
         borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
-        boxShadow: AppConstants.shadowMedium,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -659,10 +667,8 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
     }
     
     return Container(
-      decoration: BoxDecoration(
-        color: AppConstants.cardColor,
+      decoration: ModernUIStyles.cardDecoration.copyWith(
         borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
-        boxShadow: AppConstants.shadowMedium,
       ),
       child: Column(
         children: [
@@ -690,10 +696,14 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
                 horizontal: AppConstants.spacingLarge,
                 vertical: AppConstants.spacingMedium,
               ),
+              physics: const BouncingScrollPhysics(),
+              cacheExtent: 100.0, // 缓存视口外的项目
               itemCount: transactions.length,
-              separatorBuilder: (context, index) => const Divider(
-                color: AppConstants.dividerColor,
+              separatorBuilder: (context, index) => Divider(
+                color: ModernUIStyles.accentColor.withOpacity(0.1),
                 height: 1,
+                indent: 16,
+                endIndent: 16,
               ),
               itemBuilder: (context, index) {
                 final transaction = transactions[index];
@@ -713,7 +723,7 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
         : AppConstants.expenseColor;
     
     return Dismissible(
-      key: Key(transaction.id),
+      key: ValueKey(transaction.id), // 使用 ValueKey 代替 Key
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
@@ -788,9 +798,13 @@ class _JarDetailPageState extends State<JarDetailPage> with TickerProviderStateM
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppConstants.categoryColors[
-                                transaction.parentCategory.hashCode % AppConstants.categoryColors.length].withOpacity(0.1),
+                            color: ModernUIStyles.cardBackgroundColor.withOpacity(0.6),
                             borderRadius: BorderRadius.circular(AppConstants.radiusSmall),
+                            border: Border.all(
+                              color: AppConstants.categoryColors[
+                                  transaction.parentCategory.hashCode % AppConstants.categoryColors.length].withOpacity(0.5),
+                              width: 1,
+                            ),
                           ),
                           child: Text(
                             '${transaction.parentCategory} · ${transaction.subCategory}',

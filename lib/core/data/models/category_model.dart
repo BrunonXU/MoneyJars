@@ -15,6 +15,7 @@
 import 'package:hive/hive.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/transaction.dart';
+import 'subcategory_model.dart';
 
 part 'category_model.g.dart';
 
@@ -135,64 +136,6 @@ class CategoryModel extends HiveObject {
       'isEnabled': isEnabled,
       'usageCount': usageCount,
       'userId': userId,
-    };
-  }
-}
-
-/// 子分类数据模型
-@HiveType(typeId: 3)
-class SubCategoryModel extends HiveObject {
-  @HiveField(0)
-  late String name;
-
-  @HiveField(1)
-  late String icon;
-  
-  @HiveField(2, defaultValue: 0)
-  late int usageCount;
-  
-  @HiveField(3, defaultValue: true)
-  late bool isEnabled;
-
-  SubCategoryModel();
-
-  /// 从领域实体创建数据模型
-  factory SubCategoryModel.fromEntity(SubCategory entity) {
-    final model = SubCategoryModel()
-      ..name = entity.name
-      ..icon = entity.icon
-      ..usageCount = entity.usageCount
-      ..isEnabled = entity.isEnabled;
-    
-    return model;
-  }
-
-  /// 转换为领域实体
-  SubCategory toEntity() {
-    return SubCategory(
-      name: name,
-      icon: icon,
-      usageCount: usageCount,
-      isEnabled: isEnabled,
-    );
-  }
-
-  /// 从JSON创建
-  factory SubCategoryModel.fromJson(Map<String, dynamic> json) {
-    return SubCategoryModel()
-      ..name = json['name'] as String
-      ..icon = json['icon'] as String
-      ..usageCount = json['usageCount'] as int? ?? 0
-      ..isEnabled = json['isEnabled'] as bool? ?? true;
-  }
-
-  /// 转换为JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'icon': icon,
-      'usageCount': usageCount,
-      'isEnabled': isEnabled,
     };
   }
 }

@@ -6,6 +6,7 @@ import '../../widgets/common/bottom_navigation.dart';
 import 'widgets/transaction_list.dart';
 import 'widgets/quick_stats.dart';
 import 'widgets/action_buttons.dart';
+import '../settings/settings_page_new.dart';
 
 /// 新架构主页
 class HomePageNew extends StatefulWidget {
@@ -124,12 +125,6 @@ class _HomePageNewState extends State<HomePageNew> {
   }
   
   Widget _buildSettingsPage() {
-    // TODO: 使用新的设置页面
-    return const Center(
-      child: Text(
-        '设置页面',
-        style: TextStyle(color: Colors.white, fontSize: 24),
-      ),
-    );
+    return const SettingsPageNew();
   }
 }

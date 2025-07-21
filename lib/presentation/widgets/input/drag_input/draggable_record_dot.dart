@@ -15,6 +15,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui' as ui;
+import 'dart:math' as math;
 
 /// 可拖拽记录点组件
 class DraggableRecordDot extends StatelessWidget {

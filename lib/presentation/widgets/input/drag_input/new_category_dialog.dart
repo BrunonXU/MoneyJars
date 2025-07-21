@@ -440,7 +440,6 @@ class _NewCategoryDialogState extends State<NewCategoryDialog>
       if (widget.isSubCategory && widget.parentCategory != null) {
         // 创建子分类
         final subCategory = SubCategory(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
           name: _nameController.text.trim(),
           icon: _selectedIcon,
         );

@@ -58,7 +58,7 @@ import '../widgets/gesture_handler.dart';
 import '../widgets/common/loading_widget.dart';
 import '../widgets/common/error_widget.dart';
 import '../screens/jar_detail_page.dart';
-// Settings page removed - now in sidebar
+import '../screens/settings_page.dart';
 import '../screens/help_page.dart';
 import '../screens/statistics_page.dart';
 import '../screens/personalization_page.dart';
@@ -656,7 +656,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
       subtitle: const Text(
         '删除所有交易记录（不可恢复）',
-        style: TextStyle(color: Color(0xFFEF9A9A)), // Colors.red.shade200
+        style: TextStyle(color: Colors.red.shade200),
       ),
       trailing: const Icon(
         Icons.arrow_forward_ios,

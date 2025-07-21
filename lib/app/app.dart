@@ -19,6 +19,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../core/di/service_locator.dart';
 import '../presentation/providers/transaction_provider_new.dart';
 import '../presentation/providers/category_provider.dart';
+import '../presentation/providers/theme_provider.dart';
 import '../presentation/pages/splash/splash_page_new.dart';
 import '../core/theme/app_theme.dart';
 import '../core/routes/app_routes.dart';
@@ -42,6 +43,9 @@ class MoneyJarsApp extends StatelessWidget {
           create: (_) => CategoryProvider(
             categoryRepository: serviceLocator.categoryRepository,
           ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ThemeProvider(),
         ),
       ],
       child: ScreenUtilInit(

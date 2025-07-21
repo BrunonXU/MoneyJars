@@ -180,20 +180,59 @@ class _DragRecordInputNewState extends State<DragRecordInputNew>
     // 计算与中心的距离
     final distance = (position - center).distance;
     
-    // 计算角度
-    final angle = math.atan2(
+    // 计算角度（转换为0-2π范围）
+    double angle = math.atan2(
       position.dy - center.dy,
       position.dx - center.dx,
     );
+    // 将角度调整到0-2π范围
+    if (angle < 0) angle += 2 * math.pi;
     
     // 检查是否在圆环范围内
     if (distance >= 80 && distance <= 180) {
-      // 根据角度确定悬停的分类
-      // TODO: 实现分类检测逻辑
-      _controller.updateHoveredCategory(null);
+      // 获取当前显示的分类
+      final categoryProvider = context.read<CategoryProvider>();
+      final categories = widget.type == TransactionType.income
+          ? categoryProvider.enabledIncomeCategories
+          : categoryProvider.enabledExpenseCategories;
+      
+      if (_controller.isShowingSubCategories && _controller.selectedParentCategory != null) {
+        // 显示子分类时的检测
+        final parentCategory = categories.firstWhere(
+          (cat) => cat.name == _controller.selectedParentCategory,
+          orElse: () => categories.first,
+        );
+        final subCategories = parentCategory.subCategories;
+        
+        if (subCategories.isNotEmpty) {
+          // 计算每个子分类的角度范围
+          final anglePerCategory = (2 * math.pi) / subCategories.length;
+          // 从顶部开始（-π/2）
+          final adjustedAngle = (angle + math.pi / 2) % (2 * math.pi);
+          final index = (adjustedAngle / anglePerCategory).floor();
+          
+          if (index >= 0 && index < subCategories.length) {
+            _controller.updateHoveredCategory(subCategories[index].name);
+          }
+        }
+      } else {
+        // 显示主分类时的检测
+        if (categories.isNotEmpty) {
+          // 计算每个分类的角度范围
+          final anglePerCategory = (2 * math.pi) / categories.length;
+          // 从顶部开始（-π/2）
+          final adjustedAngle = (angle + math.pi / 2) % (2 * math.pi);
+          final index = (adjustedAngle / anglePerCategory).floor();
+          
+          if (index >= 0 && index < categories.length) {
+            _controller.updateHoveredCategory(categories[index].name);
+          }
+        }
+      }
     } else if (distance > 220) {
       // 检查是否可以创建新分类
       _controller.setCanCreateNewCategory(true);
+      _controller.updateHoveredCategory(null);
     } else {
       _controller.updateHoveredCategory(null);
       _controller.setCanCreateNewCategory(false);
@@ -271,7 +310,7 @@ class _DragRecordInputNewState extends State<DragRecordInputNew>
       subCategoryId: subCategory,
       subCategoryName: subCategory,
       date: DateTime.now(),
-      createTime: DateTime.now(),
+      createdAt: DateTime.now(),
       type: widget.type,
       isArchived: false,
       updatedAt: DateTime.now(),
@@ -279,7 +318,7 @@ class _DragRecordInputNewState extends State<DragRecordInputNew>
       tags: [],
       attachments: [],
       location: null,
-      userId: null,
+      userId: 'default_user',
       deviceId: null,
       syncedAt: null,
       metadata: {},
@@ -428,7 +467,7 @@ class _CategoryChartArea extends StatelessWidget {
       child: CategoryPieChart(
         categories: parentCategory.subCategories
             .map((sub) => Category(
-                  id: sub.id,
+                  id: '${parentCategory.id}_${sub.name}',
                   name: sub.name,
                   icon: sub.icon,
                   color: parentCategory.color,
@@ -438,7 +477,7 @@ class _CategoryChartArea extends StatelessWidget {
                   subCategories: [],
                   createdAt: DateTime.now(),
                   updatedAt: DateTime.now(),
-                  userId: null,
+                  userId: 'default_user',
                   usageCount: 0,
                 ))
             .toList(),

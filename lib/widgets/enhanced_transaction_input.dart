@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../models/transaction_record_hive.dart';
 import '../widgets/drag_record_input.dart';
 import '../constants/app_constants.dart';
+import '../utils/modern_ui_styles.dart';
 
 class EnhancedTransactionInput extends StatefulWidget {
   final TransactionType type;
@@ -140,10 +141,8 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: AppConstants.spacingLarge * 0.85), // 缩小15%
                 padding: const EdgeInsets.all(AppConstants.spacingXLarge * 0.85), // 缩小15%
-                decoration: BoxDecoration(
-                  color: Colors.white, // 白色背景以显示黑色字体
+                decoration: ModernUIStyles.elevatedCardDecoration.copyWith(
                   borderRadius: BorderRadius.circular(AppConstants.radiusXLarge),
-                  boxShadow: AppConstants.shadowLarge,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -176,8 +175,15 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
         Container(
           padding: const EdgeInsets.all(AppConstants.spacingMedium),
           decoration: BoxDecoration(
-            color: _getTypeColor().withOpacity(0.1),
+            color: _getTypeColor().withOpacity(0.3),
             borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+            boxShadow: [
+              BoxShadow(
+                color: _getTypeColor().withOpacity(0.2),
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Icon(
             _getTypeIcon(),
@@ -195,14 +201,15 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
                     ? '记录收入' 
                     : '记录支出',
                 style: AppConstants.titleStyle.copyWith(
-                  color: Colors.black, // 黑色字体
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: AppConstants.spacingXSmall),
               Text(
                 '填写金额和描述信息',
                 style: AppConstants.captionStyle.copyWith(
-                  color: Colors.black54, // 深灰色字体
+                  color: Colors.white70,
                 ),
               ),
             ],
@@ -211,7 +218,7 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
         IconButton(
           icon: Icon(
             Icons.close,
-            color: Colors.black54, // 深灰色图标
+            color: Colors.white70,
           ),
           onPressed: widget.onCancel,
         ),
@@ -244,7 +251,7 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
           AppConstants.labelAmount,
           style: AppConstants.bodyStyle.copyWith(
             fontWeight: FontWeight.w600,
-            color: Colors.black, // 黑色字体
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: AppConstants.spacingSmall),
@@ -254,26 +261,15 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
           ],
-          decoration: InputDecoration(
-            hintText: '0.00',
+          decoration: ModernUIStyles.inputDecoration(
+            '0.00',
+            icon: Icons.attach_money,
+          ).copyWith(
             prefixText: '¥ ',
             prefixStyle: AppConstants.titleStyle.copyWith(
               color: _getTypeColor(),
             ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-              borderSide: BorderSide(
-                color: AppConstants.dividerColor,
-                width: 1,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-              borderSide: BorderSide(
-                color: AppConstants.dividerColor,
-                width: 1,
-              ),
-            ),
+            hintText: '0.00',
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
               borderSide: BorderSide(
@@ -281,20 +277,11 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
                 width: 2,
               ),
             ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-              borderSide: const BorderSide(
-                color: Colors.red,
-                width: 2,
-              ),
-            ),
-            filled: true,
-            fillColor: AppConstants.backgroundColor,
-            contentPadding: const EdgeInsets.all(AppConstants.spacingLarge),
           ),
           style: AppConstants.titleStyle.copyWith(
             fontSize: 24,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -320,29 +307,17 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
           AppConstants.labelDescription,
           style: AppConstants.bodyStyle.copyWith(
             fontWeight: FontWeight.w600,
-            color: Colors.black, // 黑色字体
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: AppConstants.spacingSmall),
         TextFormField(
           controller: _descriptionController,
           maxLines: 3,
-          decoration: InputDecoration(
-            hintText: '输入描述信息（可选）',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-              borderSide: BorderSide(
-                color: AppConstants.dividerColor,
-                width: 1,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-              borderSide: BorderSide(
-                color: AppConstants.dividerColor,
-                width: 1,
-              ),
-            ),
+          decoration: ModernUIStyles.inputDecoration(
+            '输入描述信息（可选）',
+            icon: Icons.description,
+          ).copyWith(
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
               borderSide: BorderSide(
@@ -350,11 +325,10 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
                 width: 2,
               ),
             ),
-            filled: true,
-            fillColor: AppConstants.backgroundColor,
-            contentPadding: const EdgeInsets.all(AppConstants.spacingLarge),
           ),
-          style: AppConstants.bodyStyle,
+          style: AppConstants.bodyStyle.copyWith(
+            color: Colors.white,
+          ),
         ),
       ],
     );
@@ -366,19 +340,18 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
         Expanded(
           child: OutlinedButton(
             onPressed: _isLoading ? null : widget.onCancel,
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: AppConstants.textSecondaryColor),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+            style: ModernUIStyles.secondaryButtonStyle.copyWith(
+              side: MaterialStateProperty.all(
+                BorderSide(color: ModernUIStyles.accentColor.withOpacity(0.5)),
               ),
-              padding: const EdgeInsets.symmetric(
-                vertical: AppConstants.spacingLarge,
+              padding: MaterialStateProperty.all(
+                const EdgeInsets.symmetric(vertical: AppConstants.spacingLarge),
               ),
             ),
             child: Text(
               AppConstants.buttonCancel,
               style: AppConstants.bodyStyle.copyWith(
-                color: Colors.black54, // 深灰色字体
+                color: Colors.white70,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -388,16 +361,12 @@ class _EnhancedTransactionInputState extends State<EnhancedTransactionInput>
         Expanded(
           child: ElevatedButton(
             onPressed: _isLoading ? null : _proceedToNext,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _getTypeColor(),
-              foregroundColor: Colors.white, // 白色字体在彩色按钮上
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+            style: ModernUIStyles.primaryButtonStyle.copyWith(
+              backgroundColor: MaterialStateProperty.all(_getTypeColor()),
+              padding: MaterialStateProperty.all(
+                const EdgeInsets.symmetric(vertical: AppConstants.spacingLarge),
               ),
-              padding: const EdgeInsets.symmetric(
-                vertical: AppConstants.spacingLarge,
-              ),
-              elevation: 0,
+              elevation: MaterialStateProperty.all(2),
             ),
             child: _isLoading
                 ? SizedBox(

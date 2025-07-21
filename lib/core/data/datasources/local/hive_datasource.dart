@@ -15,7 +15,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../models/transaction_model.dart';
-import '../../models/category_model.dart';
+import '../../models/category_model.dart' hide DefaultCategoriesData;
+import '../../models/subcategory_model.dart';
 import '../../models/jar_settings_model.dart';
 import '../../../domain/entities/transaction.dart';
 import './default_categories.dart';

@@ -12,6 +12,16 @@ class TransactionProvider extends ChangeNotifier {
     title: '我的储蓄罐',
   );
 
+  // 缓存相关字段
+  double? _cachedTotalIncome;
+  double? _cachedTotalExpense;
+  double? _cachedNetIncome;
+  Map<hive.TransactionType, Map<String, double>>? _cachedCategoryStats;
+  DateTime? _lastCacheUpdate;
+  
+  // 缓存有效期（毫秒）
+  static const int _cacheValidityDuration = 60000; // 1分钟
+
   // Getters
   List<hive.TransactionRecord> get transactions => _transactions;
   List<hive.Category> get customCategories => _customCategories;
@@ -29,14 +39,49 @@ class TransactionProvider extends ChangeNotifier {
   List<hive.TransactionRecord> get unArchivedRecords => 
       _transactions.where((t) => !t.isArchived).toList();
 
-  // 计算总收入
-  double get totalIncome => incomeRecords.fold(0.0, (sum, record) => sum + record.amount);
+  // 检查缓存是否有效
+  bool get _isCacheValid {
+    if (_lastCacheUpdate == null) return false;
+    return DateTime.now().difference(_lastCacheUpdate!).inMilliseconds < _cacheValidityDuration;
+  }
 
-  // 计算总支出
-  double get totalExpense => expenseRecords.fold(0.0, (sum, record) => sum + record.amount);
+  // 清除缓存
+  void _clearCache() {
+    _cachedTotalIncome = null;
+    _cachedTotalExpense = null;
+    _cachedNetIncome = null;
+    _cachedCategoryStats = null;
+    _lastCacheUpdate = null;
+  }
 
-  // 计算净收入
-  double get netIncome => totalIncome - totalExpense;
+  // 计算总收入（带缓存）
+  double get totalIncome {
+    if (_isCacheValid && _cachedTotalIncome != null) {
+      return _cachedTotalIncome!;
+    }
+    _cachedTotalIncome = incomeRecords.fold<double>(0.0, (sum, record) => sum + record.amount);
+    _lastCacheUpdate = DateTime.now();
+    return _cachedTotalIncome!;
+  }
+
+  // 计算总支出（带缓存）
+  double get totalExpense {
+    if (_isCacheValid && _cachedTotalExpense != null) {
+      return _cachedTotalExpense!;
+    }
+    _cachedTotalExpense = expenseRecords.fold<double>(0.0, (sum, record) => sum + record.amount);
+    _lastCacheUpdate = DateTime.now();
+    return _cachedTotalExpense!;
+  }
+
+  // 计算净收入（带缓存）
+  double get netIncome {
+    if (_isCacheValid && _cachedNetIncome != null) {
+      return _cachedNetIncome!;
+    }
+    _cachedNetIncome = totalIncome - totalExpense;
+    return _cachedNetIncome!;
+  }
 
   // 获取罐头进度 (0.0 - 1.0)
   double get jarProgress => _jarSettings.targetAmount > 0 
@@ -66,8 +111,14 @@ class TransactionProvider extends ChangeNotifier {
     return parentCategory.subCategories;
   }
 
-  // 根据分类计算统计数据
+  // 根据分类计算统计数据（带缓存）
   Map<String, double> getCategoryStats(hive.TransactionType type) {
+    // 检查缓存
+    if (_isCacheValid && _cachedCategoryStats != null && _cachedCategoryStats![type] != null) {
+      return Map.from(_cachedCategoryStats![type]!);
+    }
+
+    // 计算统计数据
     List<hive.TransactionRecord> records = type == hive.TransactionType.income 
         ? incomeRecords 
         : expenseRecords;
@@ -76,6 +127,12 @@ class TransactionProvider extends ChangeNotifier {
     for (var record in records) {
       stats[record.parentCategory] = (stats[record.parentCategory] ?? 0) + record.amount;
     }
+    
+    // 更新缓存
+    _cachedCategoryStats ??= {};
+    _cachedCategoryStats![type] = Map.from(stats);
+    _lastCacheUpdate = DateTime.now();
+    
     return stats;
   }
 
@@ -138,6 +195,7 @@ class TransactionProvider extends ChangeNotifier {
     try {
       await _storageService.addTransaction(transaction);
       _transactions.add(transaction);
+      _clearCache(); // 清除缓存
       notifyListeners();
     } catch (e) {
       debugPrint('添加交易记录失败: $e');
@@ -152,6 +210,7 @@ class TransactionProvider extends ChangeNotifier {
       final index = _transactions.indexWhere((t) => t.id == transaction.id);
       if (index != -1) {
         _transactions[index] = transaction;
+        _clearCache(); // 清除缓存
         notifyListeners();
       }
     } catch (e) {
@@ -165,6 +224,7 @@ class TransactionProvider extends ChangeNotifier {
     try {
       await _storageService.deleteTransaction(id);
       _transactions.removeWhere((t) => t.id == id);
+      _clearCache(); // 清除缓存
       notifyListeners();
     } catch (e) {
       debugPrint('删除交易记录失败: $e');

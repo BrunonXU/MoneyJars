@@ -2,11 +2,11 @@ import 'dart:html' as html;
 import 'dart:convert';
 import '../models/transaction_record_hive.dart' as hive;
 import 'storage_service.dart';
-import 'storage_service_adapter.dart';
+// import 'storage_service_adapter.dart';
 
 /// 平台特定的存储服务实现选择器（Web端）
-/// 使用新架构的适配器
-StorageService createStorageService() => RepositoryStorageAdapter();
+/// 新架构不再使用此方法
+StorageService createStorageService() => WebStorageService();
 
 /// 🌐 Web存储服务实现（localStorage）
 class WebStorageService extends StorageService {

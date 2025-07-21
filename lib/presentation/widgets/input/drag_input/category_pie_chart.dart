@@ -69,6 +69,7 @@ class CategoryPieChart extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return CustomPaint(
       size: Size(radius * 2 + 100, radius * 2 + 100),
       painter: _CategoryPieChartPainter(
@@ -83,6 +84,8 @@ class CategoryPieChart extends StatelessWidget {
         radius: radius,
         innerRadius: innerRadius,
         depth: depth,
+        cardColor: theme.cardColor,
+        primaryColor: theme.primaryColor,
       ),
     );
   }
@@ -101,6 +104,8 @@ class _CategoryPieChartPainter extends CustomPainter {
   final double radius;
   final double innerRadius;
   final double depth;
+  final Color cardColor;
+  final Color primaryColor;
   
   _CategoryPieChartPainter({
     required this.categories,
@@ -114,6 +119,8 @@ class _CategoryPieChartPainter extends CustomPainter {
     required this.radius,
     required this.innerRadius,
     required this.depth,
+    required this.cardColor,
+    required this.primaryColor,
   });
   
   @override
@@ -379,12 +386,12 @@ class _CategoryPieChartPainter extends CustomPainter {
     // 背景
     paint.color = canCreateNew 
         ? Colors.black.withOpacity(0.9)
-        : Theme.of(canvas.size as BuildContext).cardColor.withOpacity(0.9);
+        : cardColor.withOpacity(0.9);
     paint.style = PaintingStyle.fill;
     canvas.drawCircle(center, innerRadius, paint);
     
     // 边框
-    paint.color = Theme.of(canvas.size as BuildContext).primaryColor.withOpacity(0.3);
+    paint.color = primaryColor.withOpacity(0.3);
     paint.style = PaintingStyle.stroke;
     paint.strokeWidth = 2;
     canvas.drawCircle(center, innerRadius, paint);
@@ -398,13 +405,13 @@ class _CategoryPieChartPainter extends CustomPainter {
       textColor = Colors.white;
     } else if (hoveredCategory != null && stats.containsKey(hoveredCategory)) {
       centerText = '¥${stats[hoveredCategory]!.toStringAsFixed(0)}';
-      textColor = Theme.of(canvas.size as BuildContext).primaryColor;
+      textColor = primaryColor;
     } else if (totalAmount > 0) {
       centerText = '¥${totalAmount.toStringAsFixed(0)}';
-      textColor = Theme.of(canvas.size as BuildContext).primaryColor;
+      textColor = primaryColor;
     } else {
       centerText = isSubCategory ? '选择子分类' : '选择分类';
-      textColor = Theme.of(canvas.size as BuildContext).primaryColor;
+      textColor = primaryColor;
     }
     
     final textPainter = TextPainter(
