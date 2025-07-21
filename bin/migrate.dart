@@ -1,10 +1,10 @@
 #!/usr/bin/env dart
 
 import 'dart:io';
-import 'package:money_jar/services/storage_service.dart';
-import 'package:money_jar/core/data/datasources/local/hive_datasource.dart';
-import 'package:money_jar/tools/migration/migration_runner.dart';
-import 'package:money_jar/tools/migration/migration_validator.dart';
+import 'package:money_jars/services/storage_service.dart';
+import 'package:money_jars/core/data/datasources/local/hive_datasource.dart';
+import 'package:money_jars/tools/migration/migration_runner.dart';
+import 'package:money_jars/tools/migration/migration_validator.dart';
 import 'package:hive/hive.dart';
 
 /// 命令行迁移工具
