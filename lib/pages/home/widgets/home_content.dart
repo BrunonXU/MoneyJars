@@ -1,8 +1,8 @@
 /*
- * 主界面内容扩展 (home_screen_content.dart)
+ * 主界面内容扩展 (home_content.dart)
  * 
  * 功能说明：
- * - 为home_screen.dart提供不同设备的内容布局
+ * - 为home_page.dart提供不同设备的内容布局
  * - 平板端：水平显示多个罐头
  * - 桌面端：网格显示所有罐头
  */
@@ -10,15 +10,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import '../providers/transaction_provider.dart';
-import '../models/transaction_record_hive.dart';
-import '../widgets/money_jar_widget.dart';
-import '../constants/app_constants.dart';
-import '../utils/responsive_layout.dart';
-import '../screens/jar_detail_page.dart';
+import '../../../services/providers/transaction_provider.dart';
+import '../../../models/transaction_record_hive.dart';
+import '../../../widgets/jar/jar_widget.dart';
+import '../../../config/constants.dart';
+import '../../../utils/responsive_layout.dart';
+import '../../detail/jar_detail_page.dart';
 
-// 扩展home_screen.dart的内容方法
-extension HomeScreenContent on State {
+// 扩展home_page.dart的内容方法
+extension HomePageContent on State {
   // 平板端内容 - 水平显示多个罐头
   Widget buildTabletContent() {
     final jarLayout = ResponsiveLayout.getJarLayout();

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../constants/app_constants.dart';
+import '../../config/constants.dart';
 import '../../models/transaction_record_hive.dart';
-import '../../providers/transaction_provider.dart';
-import '../../widgets/money_jar_widget.dart';
+import '../../services/providers/transaction_provider.dart';
+import '../jar/jar_widget.dart';
 import '../hints/swipe_hint_widget.dart';
 
 /// 🍯 罐头页面组件
 /// 
 /// 这个组件负责显示单个罐头页面，包括：
-/// - 罐头主体显示（MoneyJarWidget）
+/// - 罐头主体显示（JarWidget）
 /// - 滑动提示（SwipeHintWidget）
 /// - 页面布局和定位
 /// - 透明度效果应用
@@ -95,9 +95,9 @@ class JarPageWidget extends StatelessWidget {
 
   /// 🎨 构建罐头内容
   /// 
-  /// 创建MoneyJarWidget实例并传入相关参数
+  /// 创建JarWidget实例并传入相关参数
   Widget _buildJarContent() {
-    return MoneyJarWidget(
+    return JarWidget(
       title: title,
       type: type,
       currentAmount: currentAmount,

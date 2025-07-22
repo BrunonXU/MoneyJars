@@ -32,7 +32,9 @@
       "Bash(mv:*)",
       "Bash(grep:*)",
       "Bash(pkill:*)",
-      "Bash(dart doc:*)"
+      "Bash(dart doc:*)",
+      "Bash(find:*)",
+      "Bash(true)"
     ],
     "deny": []
   }

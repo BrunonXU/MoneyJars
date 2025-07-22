@@ -1,5 +1,5 @@
 /*
- * MoneyJars 主屏幕界面 (home_screen.dart)
+ * MoneyJars 主屏幕界面 (home_page.dart)
  * 
  * 页面结构：
  * ┌─────────────────────────────────────────────┐
@@ -49,32 +49,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../providers/transaction_provider.dart';
-import '../models/transaction_record_hive.dart';
-import '../widgets/money_jar_widget.dart';
-import '../widgets/enhanced_transaction_input.dart';
-import '../widgets/jar_settings_dialog.dart';
-import '../widgets/gesture_handler.dart';
-import '../widgets/common/loading_widget.dart';
-import '../widgets/common/error_widget.dart';
-import '../screens/jar_detail_page.dart';
+import '../../services/providers/transaction_provider.dart';
+import '../../models/transaction_record_hive.dart';
+import '../../widgets/jar/jar_widget.dart';
+import '../../widgets/input/transaction_input.dart';
+import '../../widgets/jar_settings_dialog.dart';
+import '../../widgets/gesture_handler.dart';
+import '../../widgets/common/loading_widget.dart';
+import '../../widgets/common/error_widget.dart';
+import '../detail/jar_detail_page.dart';
 // Settings page removed - now in sidebar
-import '../screens/help_page.dart';
-import '../screens/statistics_page.dart';
-import '../screens/personalization_page.dart';
-import '../constants/app_constants.dart';
-import '../utils/responsive_layout.dart';
-import '../screens/home_screen_content.dart';
-import '../utils/modern_ui_styles.dart';
+import '../help/help_page.dart';
+import '../statistics/statistics_page.dart';
+import '../settings/personalization_page.dart';
+import '../../config/constants.dart';
+import '../../utils/responsive_layout.dart';
+import 'widgets/home_content.dart';
+import '../../utils/modern_ui_styles.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // ===== 📄 页面控制器 =====
   late PageController _pageController;         // PageView滚动控制器：管理三个罐头页面的垂直滑动切换
   
@@ -1406,7 +1406,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   /// 🍯 单个罐头页面构建器：完整的罐头展示页面
-  /// 包含SwipeDetector手势检测 + MoneyJarWidget罐头组件 + 滑动提示
+  /// 包含SwipeDetector手势检测 + JarWidget罐头组件 + 滑动提示
   Widget _buildJarPage({
     required String title,                           // 罐头标题：如"支出罐头"、"收入罐头"或用户自定义名称
     required TransactionType type,                   // 交易类型：支出、收入或综合(使用income类型显示)
@@ -1439,7 +1439,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     offset: Offset(0, 145.h ),        // X轴偏移：0, Y轴偏移：145逻辑像素向下
                     child: Opacity(                   // 🎨 所有罐头统一40%透明度效果
                       opacity: 0.6,                   // 透明度：60%显示，即40%透明
-                      child: MoneyJarWidget(          // 💰 金钱罐头组件：核心的罐头显示组件
+                      child: JarWidget(          // 💰 金钱罐头组件：核心的罐头显示组件
                         amount: currentAmount,        // 显示金额：当前总额
                         type: type,                   // 罐头类型：决定图标和颜色
                         title: title,                 // 罐头标题：显示的文字标题

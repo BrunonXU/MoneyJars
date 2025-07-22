@@ -17,13 +17,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../constants/app_constants.dart';
-import '../models/transaction_record_hive.dart';
-import '../providers/transaction_provider.dart';
-import '../widgets/common/error_widget.dart';
-import '../widgets/common/loading_widget.dart';
-import '../utils/responsive_layout.dart';
-import '../utils/modern_ui_styles.dart';
+import '../../config/constants.dart';
+import '../../models/transaction_record_hive.dart';
+import '../../services/providers/transaction_provider.dart';
+import '../../widgets/common/error_widget.dart';
+import '../../widgets/common/loading_widget.dart';
+import '../../utils/responsive_layout.dart';
+import '../../utils/modern_ui_styles.dart';
 
 class JarDetailPage extends StatefulWidget {
   final TransactionType type;

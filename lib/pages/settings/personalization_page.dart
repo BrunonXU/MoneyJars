@@ -1,17 +1,17 @@
 /*
- * 设置页面 (settings_page.dart)
+ * 个性化页面 (personalization_page.dart)
  * 
  * 功能说明：
- * - 应用设置和配置选项
+ * - 个性化设置和主题配置
  * - 保持顶部MoneyJars导航栏
  */
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../constants/app_constants.dart';
+import '../../config/constants.dart';
 
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+class PersonalizationPage extends StatelessWidget {
+  const PersonalizationPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +74,7 @@ class SettingsPage extends StatelessWidget {
                           boxShadow: AppConstants.shadowMedium,
                         ),
                         child: Icon(
-                          Icons.settings,
+                          Icons.more_horiz,
                           size: AppConstants.iconMedium.sp,
                           color: AppConstants.primaryColor,
                         ),
@@ -82,7 +82,7 @@ class SettingsPage extends StatelessWidget {
                     ),
                     SizedBox(width: AppConstants.spacingMedium.w),
                     Text(
-                      'MoneyJars - 设置',
+                      'MoneyJars - 个性化',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppConstants.primaryColor,
@@ -107,13 +107,13 @@ class SettingsPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.settings,
+            Icons.more_horiz,
             size: 80.sp,
             color: AppConstants.primaryColor,
           ),
           SizedBox(height: 20.h),
           Text(
-            '设置页面',
+            '个性化设置',
             style: AppConstants.headingStyle.copyWith(
               fontSize: 24.sp,
               color: AppConstants.primaryColor,
@@ -121,7 +121,7 @@ class SettingsPage extends StatelessWidget {
           ),
           SizedBox(height: 10.h),
           Text(
-            '功能开发中...',
+            '个性化功能开发中...',
             style: AppConstants.bodyStyle.copyWith(
               color: AppConstants.textSecondaryColor,
             ),
