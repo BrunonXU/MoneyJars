@@ -9,10 +9,12 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart';  
 import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:html' as html;
+import 'dart:convert';
 import '../../config/premium_color_scheme.dart';
 import '../../models/transaction_record_hive.dart';
 import '../../services/providers/transaction_provider.dart';
@@ -47,6 +49,15 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
   String _searchQuery = '';
+  
+  // 高级筛选状态
+  bool _isFilterActive = false;
+  double? _minAmount;
+  double? _maxAmount;
+  DateTime? _startDate;
+  DateTime? _endDate;
+  Set<String> _selectedCategories = <String>{};
+  TransactionType? _selectedType;
   
   // 时间范围选择
   String _timeRange = '本月'; // 本周、本月、三个月、一年
@@ -98,6 +109,7 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
       appBar: _buildSimpleAppBar(),
       body: Column(
         children: [
+          _buildFilterIndicator(),
           _buildAnalysisCard(),
           Expanded(
             child: AnimatedSwitcher(
@@ -295,17 +307,6 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
               ],
             ),
           ),
-        if (_currentView == ViewMode.trend)
-          PopupMenuItem(
-            value: 'timeRange',
-            child: Row(
-              children: [
-                Icon(Icons.date_range, color: PremiumColors.darkCharcoal, size: 18),
-                SizedBox(width: 12.w),
-                Text('时间范围', style: TextStyle(color: PremiumColors.darkCharcoal, fontSize: 14.sp)),
-              ],
-            ),
-          ),
       ],
       onSelected: _handleMenuAction,
     );
@@ -313,59 +314,141 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
 
   // 删除了未使用的SliverAppBar相关方法
 
-  // 构建智能分析卡片
+  // 构建筛选状态指示器
+  Widget _buildFilterIndicator() {
+    if (!_isFilterActive) return SizedBox.shrink();
+    
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: PremiumColors.deepWineRed.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: PremiumColors.deepWineRed.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.filter_alt,
+            color: PremiumColors.deepWineRed,
+            size: 14,
+          ),
+          SizedBox(width: 6.w),
+          Text(
+            '筛选已应用',
+            style: TextStyle(
+              color: PremiumColors.deepWineRed,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(width: 8.w),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _minAmount = null;
+                _maxAmount = null;
+                _startDate = null;
+                _endDate = null;
+                _selectedCategories.clear();
+                _selectedType = null;
+                _isFilterActive = false;
+              });
+              _showSnackBar('筛选条件已清除');
+            },
+            child: Icon(
+              Icons.close,
+              color: PremiumColors.deepWineRed,
+              size: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建智能分析卡片 - 重新设计布局避免溢出
   Widget _buildAnalysisCard() {
     return Consumer<TransactionProvider>(
         builder: (context, provider, _) {
           final stats = _calculateStats(provider);
           
           return Container(
-            margin: EdgeInsets.all(16.w),
-            padding: EdgeInsets.all(20.w),
+            margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  _themeColor.withOpacity(0.2),
-                  PremiumColors.darkCharcoal,
+                  _themeColor.withOpacity(0.15),
+                  PremiumColors.darkCharcoal.withOpacity(0.8),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: PremiumColors.cardBorder),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: PremiumColors.cardBorder.withOpacity(0.6)),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
+                // 第一行：AI标识 + 操作按钮
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '智能分析',
-                      style: TextStyle(
-                        color: PremiumColors.darkCharcoal,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
+                    // AI标识区域
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: PremiumColors.luxuryGold.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: PremiumColors.luxuryGold.withOpacity(0.4)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.psychology_outlined,
+                            color: PremiumColors.luxuryGold,
+                            size: 14,
+                          ),
+                          SizedBox(width: 6.w),
+                          Text(
+                            'AI分析',
+                            style: TextStyle(
+                              color: PremiumColors.luxuryGold,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     // 高级功能按钮
                     _buildActionButtons(),
                   ],
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: 12.h),
+                // 第二行：统计信息
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Expanded(
-                      child: _buildStatItem(
-                        '本期总额',
-                        '¥${stats['total']?.toStringAsFixed(2) ?? '0.00'}',
+                      child: _buildCompactStatItem(
+                        '总额',
+                        '¥${(stats['total'] ?? 0.0) >= 1000 ? '${((stats['total'] ?? 0.0) / 1000).toStringAsFixed(1)}k' : (stats['total'] ?? 0.0).toStringAsFixed(0)}',
                         _themeColor,
                       ),
                     ),
-                    SizedBox(width: 12.w),
+                    Container(
+                      width: 1, 
+                      height: 30.h, 
+                      color: PremiumColors.cardBorder.withOpacity(0.5),
+                      margin: EdgeInsets.symmetric(horizontal: 8.w),
+                    ),
                     Expanded(
-                      child: _buildStatItem(
-                        '对比上期',
+                      child: _buildCompactStatItem(
+                        '变化',
                         '${stats['changePercent'] ?? 0}%',
                         stats['changePercent'] != null && stats['changePercent'] > 0
                             ? PremiumColors.successEmerald
@@ -374,10 +457,15 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
                         isPositive: stats['changePercent'] != null && stats['changePercent'] > 0,
                       ),
                     ),
-                    SizedBox(width: 12.w),
+                    Container(
+                      width: 1, 
+                      height: 30.h, 
+                      color: PremiumColors.cardBorder.withOpacity(0.5),
+                      margin: EdgeInsets.symmetric(horizontal: 8.w),
+                    ),
                     Expanded(
-                      child: _buildStatItem(
-                        '交易笔数',
+                      child: _buildCompactStatItem(
+                        '笔数',
                         '${stats['count'] ?? 0}',
                         PremiumColors.luxuryGold,
                       ),
@@ -389,6 +477,53 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
           );
         },
       );
+  }
+
+  // 构建紧凑统计项 - 优化布局防溢出
+  Widget _buildCompactStatItem(String label, String value, Color color, 
+      {bool showArrow = false, bool isPositive = true}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: PremiumColors.silverGrey,
+            fontSize: 11.sp,
+            fontWeight: FontWeight.w400,
+          ),
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+        ),
+        SizedBox(height: 4.h),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (showArrow)
+              Icon(
+                isPositive ? Icons.arrow_upward : Icons.arrow_downward,
+                color: color,
+                size: 12,
+              ),
+            Flexible(
+              child: Text(
+                value,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   // 构建统计项
@@ -769,11 +904,188 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
 
   // 构建趋势图视图
   Widget _buildTrendView() {
-    return Center(
-      child: Text(
-        '趋势图视图开发中...',
-        style: TextStyle(color: PremiumColors.darkCharcoal),
-      ),
+    return Consumer<TransactionProvider>(
+      builder: (context, provider, _) {
+        final trendData = _getTrendChartData(provider);
+        
+        if (trendData.isEmpty) {
+          return _buildEmptyState();
+        }
+        
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            children: [
+              // 趋势图容器
+              Container(
+                height: 350.h,
+                margin: EdgeInsets.only(bottom: 24.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // 标题和控制区
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: PremiumColors.cardBorder, width: 1),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '趋势分析',
+                            style: TextStyle(
+                              color: PremiumColors.darkCharcoal,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          // 可点击的时间范围选择器
+                          GestureDetector(
+                            onTap: () => _showTimeRangeDialog(),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8F9FA),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: PremiumColors.cardBorder),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today,
+                                    size: 14.w,
+                                    color: PremiumColors.smokeGrey,
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    _timeRange,
+                                    style: TextStyle(
+                                      color: PremiumColors.darkCharcoal,
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  SizedBox(width: 4.w),
+                                  Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 16.w,
+                                    color: PremiumColors.smokeGrey,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 折线图
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(16.w, 24.h, 24.w, 16.h),
+                        child: LineChart(
+                          LineChartData(
+                            gridData: FlGridData(
+                              show: true,
+                              drawVerticalLine: false,
+                              horizontalInterval: _getHorizontalInterval(trendData),
+                              getDrawingHorizontalLine: (value) {
+                                return FlLine(
+                                  color: PremiumColors.cardBorder,
+                                  strokeWidth: 1,
+                                  dashArray: [5, 5],
+                                );
+                              },
+                            ),
+                            titlesData: FlTitlesData(
+                              show: true,
+                              rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  reservedSize: 30.h,
+                                  interval: _getDateInterval(trendData.length),
+                                  getTitlesWidget: (value, meta) => _buildDateLabel(value, trendData),
+                                ),
+                              ),
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  interval: _getHorizontalInterval(trendData),
+                                  reservedSize: 45.w,
+                                  getTitlesWidget: (value, meta) => _buildAmountLabel(value),
+                                ),
+                              ),
+                            ),
+                            borderData: FlBorderData(
+                              show: true,
+                              border: Border(
+                                bottom: BorderSide(color: PremiumColors.cardBorder, width: 1),
+                                left: BorderSide(color: PremiumColors.cardBorder, width: 1),
+                              ),
+                            ),
+                            minX: 0,
+                            maxX: (trendData.length - 1).toDouble(),
+                            minY: 0,
+                            maxY: _getMaxY(trendData),
+                            lineBarsData: _getLineBarsData(trendData),
+                            lineTouchData: LineTouchData(
+                              enabled: true,
+                              touchTooltipData: LineTouchTooltipData(
+                                getTooltipColor: (touchedSpot) => PremiumColors.darkCharcoal,
+                                tooltipPadding: EdgeInsets.all(8.w),
+                                getTooltipItems: (spots) => _getTooltipItems(spots, trendData),
+                              ),
+                              getTouchedSpotIndicator: (barData, spotIndexes) {
+                                return spotIndexes.map((index) {
+                                  return TouchedSpotIndicatorData(
+                                    FlLine(
+                                      color: _themeColor.withOpacity(0.3),
+                                      strokeWidth: 2,
+                                      dashArray: [5, 5],
+                                    ),
+                                    FlDotData(
+                                      getDotPainter: (spot, percent, barData, index) {
+                                        return FlDotCirclePainter(
+                                          radius: 6,
+                                          color: Colors.white,
+                                          strokeWidth: 3,
+                                          strokeColor: _themeColor,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                }).toList();
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // 统计概要卡片
+              _buildTrendSummaryCard(trendData),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -956,21 +1268,493 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
     });
   }
 
+  // 获取过滤后的交易记录 - 支持搜索和高级筛选
+  List<TransactionRecord> _getFilteredTransactions(TransactionProvider provider) {
+    List<TransactionRecord> allTransactions;
+    
+    // 根据页面类型获取对应的交易记录
+    if (widget.isComprehensive) {
+      allTransactions = provider.transactions; // 综合页面显示所有记录
+    } else {
+      allTransactions = widget.type == TransactionType.income 
+          ? provider.incomeRecords 
+          : provider.expenseRecords;
+    }
+    
+    List<TransactionRecord> filteredTransactions = List.from(allTransactions);
+    
+    // 应用搜索筛选
+    if (_searchController.text.isNotEmpty) {
+      final searchTerm = _searchController.text.toLowerCase();
+      filteredTransactions = filteredTransactions.where((transaction) {
+        return transaction.description.toLowerCase().contains(searchTerm) ||
+               transaction.parentCategory.toLowerCase().contains(searchTerm) ||
+               transaction.subCategory.toLowerCase().contains(searchTerm);
+      }).toList();
+    }
+    
+    // 应用高级筛选条件
+    if (_isFilterActive) {
+      filteredTransactions = filteredTransactions.where((transaction) {
+        // 金额范围筛选
+        if (_minAmount != null && transaction.amount < _minAmount!) {
+          return false;
+        }
+        if (_maxAmount != null && transaction.amount > _maxAmount!) {
+          return false;
+        }
+        
+        // 日期范围筛选
+        if (_startDate != null && transaction.date.isBefore(_startDate!)) {
+          return false;
+        }
+        if (_endDate != null && transaction.date.isAfter(_endDate!.add(Duration(days: 1)))) {
+          return false;
+        }
+        
+        // 分类筛选
+        if (_selectedCategories.isNotEmpty && 
+            !_selectedCategories.contains(transaction.parentCategory)) {
+          return false;
+        }
+        
+        // 交易类型筛选（仅限综合页面）
+        if (widget.isComprehensive && _selectedType != null && 
+            transaction.type != _selectedType) {
+          return false;
+        }
+        
+        return true;
+      }).toList();
+    }
+    
+    return filteredTransactions;
+  }
+
+  // CSV导出功能 - 企业级数据导出
+  Future<void> _exportToCSV() async {
+    try {
+      final provider = Provider.of<TransactionProvider>(context, listen: false);
+      final transactions = _getFilteredTransactions(provider);
+      
+      if (transactions.isEmpty) {
+        _showSnackBar('没有数据可以导出', isError: true);
+        return;
+      }
+
+      // 构建CSV内容
+      final csvContent = _buildCSVContent(transactions);
+      
+      // 生成文件名（包含交易类型和时间戳）
+      final now = DateTime.now();
+      final dateFormatter = DateFormat('yyyy-MM-dd_HH-mm');
+      final typeName = widget.type == TransactionType.income ? '收入' : 
+                      widget.isComprehensive ? '综合' : '支出';
+      final fileName = '${typeName}记录_${dateFormatter.format(now)}.csv';
+      
+      // 创建Blob并触发下载
+      final bytes = utf8.encode(csvContent);
+      final blob = html.Blob([bytes], 'text/csv;charset=utf-8');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      
+      html.AnchorElement(href: url)
+        ..setAttribute('download', fileName)
+        ..click();
+      
+      html.Url.revokeObjectUrl(url);
+      
+      _showSnackBar('数据导出成功：$fileName');
+      
+    } catch (e) {
+      _showSnackBar('导出失败：${e.toString()}', isError: true);
+    }
+  }
+
+  // 构建CSV内容
+  String _buildCSVContent(List<TransactionRecord> transactions) {
+    final buffer = StringBuffer();
+    
+    // CSV头部 - 企业级字段规范
+    buffer.writeln('日期,时间,类型,主分类,子分类,金额,描述,余额变化,创建时间');
+    
+    // 数据行
+    for (final transaction in transactions) {
+      final date = DateFormat('yyyy-MM-dd').format(transaction.date);
+      final time = DateFormat('HH:mm:ss').format(transaction.date);
+      final type = transaction.type == TransactionType.income ? '收入' : '支出';
+      final parentCategory = transaction.parentCategory;
+      final subCategory = transaction.subCategory;
+      final amount = transaction.amount.toStringAsFixed(2);
+      final description = '"${transaction.description.replaceAll('"', '""')}"'; // CSV转义
+      final balanceChange = transaction.type == TransactionType.income ? '+$amount' : '-$amount';
+      final createdAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(transaction.createdAt);
+      
+      buffer.writeln('$date,$time,$type,$parentCategory,$subCategory,$amount,$description,$balanceChange,$createdAt');
+    }
+    
+    return buffer.toString();
+  }
+
+  // 显示提示信息
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError 
+            ? PremiumColors.errorRed 
+            : PremiumColors.successEmerald,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
   void _handleMenuAction(String action) {
     switch (action) {
       case 'export':
-        // TODO: 实现导出功能
+        _exportToCSV();
         break;
       case 'filter':
-        // TODO: 实现高级筛选
+        _showAdvancedFilterDialog();
         break;
       case 'batch':
         _enterSelectionMode(null);
         break;
-      case 'timeRange':
-        _showTimeRangeDialog();
-        break;
     }
+  }
+
+  // 显示高级筛选对话框 - 企业级筛选体验
+  Future<void> _showAdvancedFilterDialog() async {
+    final provider = Provider.of<TransactionProvider>(context, listen: false);
+    
+    // 临时筛选状态
+    double? tempMinAmount = _minAmount;
+    double? tempMaxAmount = _maxAmount;
+    DateTime? tempStartDate = _startDate;
+    DateTime? tempEndDate = _endDate;
+    Set<String> tempSelectedCategories = Set.from(_selectedCategories);
+    TransactionType? tempSelectedType = _selectedType;
+    
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(Icons.filter_list, color: PremiumColors.deepWineRed, size: 24),
+              SizedBox(width: 12.w),
+              Text(
+                '高级筛选',
+                style: TextStyle(
+                  color: PremiumColors.darkCharcoal,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          content: Container(
+            width: 320.w,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 金额范围筛选
+                  _buildFilterSection(
+                    '金额范围',
+                    Icons.attach_money,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: '最小金额',
+                              prefixText: '¥',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              tempMinAmount = double.tryParse(value);
+                            },
+                            controller: TextEditingController(
+                              text: tempMinAmount?.toString() ?? '',
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 16.w),
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: '最大金额',
+                              prefixText: '¥',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              tempMaxAmount = double.tryParse(value);
+                            },
+                            controller: TextEditingController(
+                              text: tempMaxAmount?.toString() ?? '',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  SizedBox(height: 24.h),
+                  
+                  // 日期范围筛选
+                  _buildFilterSection(
+                    '日期范围',
+                    Icons.date_range,
+                    Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async {
+                                  final date = await showDatePicker(
+                                    context: context,
+                                    initialDate: tempStartDate ?? DateTime.now().subtract(Duration(days: 30)),
+                                    firstDate: DateTime(2020),
+                                    lastDate: DateTime.now(),
+                                  );
+                                  if (date != null) {
+                                    setDialogState(() => tempStartDate = date);
+                                  }
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey.shade400),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    tempStartDate != null 
+                                        ? DateFormat('yyyy-MM-dd').format(tempStartDate!)
+                                        : '开始日期',
+                                    style: TextStyle(color: PremiumColors.darkCharcoal),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 16.w),
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async {
+                                  final date = await showDatePicker(
+                                    context: context,
+                                    initialDate: tempEndDate ?? DateTime.now(),
+                                    firstDate: tempStartDate ?? DateTime(2020),
+                                    lastDate: DateTime.now(),
+                                  );
+                                  if (date != null) {
+                                    setDialogState(() => tempEndDate = date);
+                                  }
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey.shade400),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    tempEndDate != null 
+                                        ? DateFormat('yyyy-MM-dd').format(tempEndDate!)
+                                        : '结束日期',
+                                    style: TextStyle(color: PremiumColors.darkCharcoal),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  SizedBox(height: 24.h),
+                  
+                  // 分类筛选
+                  _buildFilterSection(
+                    '分类筛选',
+                    Icons.category,
+                    _buildCategoryFilter(provider, tempSelectedCategories, setDialogState),
+                  ),
+                  
+                  // 交易类型筛选（仅综合页面显示）
+                  if (widget.isComprehensive) ...[
+                    SizedBox(height: 24.h),
+                    _buildFilterSection(
+                      '交易类型',
+                      Icons.swap_horiz,
+                      Row(
+                        children: [
+                          _buildTypeChip('收入', TransactionType.income, tempSelectedType, (type) {
+                            setDialogState(() {
+                              tempSelectedType = tempSelectedType == type ? null : type;
+                            });
+                          }),
+                          SizedBox(width: 12.w),
+                          _buildTypeChip('支出', TransactionType.expense, tempSelectedType, (type) {
+                            setDialogState(() {
+                              tempSelectedType = tempSelectedType == type ? null : type;
+                            });
+                          }),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // 清除所有筛选
+                setDialogState(() {
+                  tempMinAmount = null;
+                  tempMaxAmount = null;
+                  tempStartDate = null;
+                  tempEndDate = null;
+                  tempSelectedCategories.clear();
+                  tempSelectedType = null;
+                });
+              },
+              child: Text('清除', style: TextStyle(color: PremiumColors.smokeGrey)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('取消', style: TextStyle(color: PremiumColors.smokeGrey)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // 应用筛选
+                setState(() {
+                  _minAmount = tempMinAmount;
+                  _maxAmount = tempMaxAmount;
+                  _startDate = tempStartDate;
+                  _endDate = tempEndDate;
+                  _selectedCategories = tempSelectedCategories;
+                  _selectedType = tempSelectedType;
+                  _isFilterActive = _minAmount != null || _maxAmount != null ||
+                      _startDate != null || _endDate != null ||
+                      _selectedCategories.isNotEmpty || _selectedType != null;
+                });
+                Navigator.pop(context, true);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: PremiumColors.deepWineRed,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text('应用', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+    
+    if (result == true) {
+      _showSnackBar('筛选条件已应用');
+    }
+  }
+
+  // 构建筛选区域
+  Widget _buildFilterSection(String title, IconData icon, Widget content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: PremiumColors.deepWineRed, size: 16),
+            SizedBox(width: 8.w),
+            Text(
+              title,
+              style: TextStyle(
+                color: PremiumColors.darkCharcoal,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        content,
+      ],
+    );
+  }
+
+  // 构建分类筛选
+  Widget _buildCategoryFilter(TransactionProvider provider, Set<String> selectedCategories, StateSetter setDialogState) {
+    final categories = widget.isComprehensive 
+        ? [...provider.getAllCategories(TransactionType.income), ...provider.getAllCategories(TransactionType.expense)]
+        : provider.getAllCategories(widget.type);
+    
+    return Wrap(
+      spacing: 8.w,
+      runSpacing: 8.h,
+      children: categories.take(6).map((category) {
+        final isSelected = selectedCategories.contains(category.name);
+        return FilterChip(
+          label: Text(
+            '${category.icon} ${category.name}',
+            style: TextStyle(
+              color: isSelected ? Colors.white : PremiumColors.darkCharcoal,
+              fontSize: 12.sp,
+            ),
+          ),
+          selected: isSelected,
+          onSelected: (selected) {
+            setDialogState(() {
+              if (selected) {
+                selectedCategories.add(category.name);
+              } else {
+                selectedCategories.remove(category.name);
+              }
+            });
+          },
+          backgroundColor: Colors.grey.shade200,
+          selectedColor: PremiumColors.deepWineRed,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        );
+      }).toList(),
+    );
+  }
+
+  // 构建交易类型筛选芯片
+  Widget _buildTypeChip(String label, TransactionType type, TransactionType? selectedType, Function(TransactionType) onTap) {
+    final isSelected = selectedType == type;
+    return GestureDetector(
+      onTap: () => onTap(type),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: isSelected ? PremiumColors.deepWineRed : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? PremiumColors.deepWineRed : Colors.grey.shade400,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : PremiumColors.darkCharcoal,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
   }
 
   void _enterSelectionMode(String? initialId) {
@@ -1025,20 +1809,67 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('选择时间范围', style: TextStyle(color: PremiumColors.darkCharcoal)),
+        title: Row(
+          children: [
+            Icon(Icons.access_time, color: _themeColor, size: 20.w),
+            SizedBox(width: 8.w),
+            Text(
+              '选择时间范围', 
+              style: TextStyle(
+                color: PremiumColors.darkCharcoal,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        contentPadding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 8.h),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: ['本周', '本月', '三个月', '一年'].map((range) => 
-            ListTile(
-              title: Text(range, style: TextStyle(color: PremiumColors.darkCharcoal)),
-              leading: Radio<String>(
-                value: range,
-                groupValue: _timeRange,
-                onChanged: (value) {
-                  setState(() => _timeRange = value!);
-                  Navigator.pop(context);
-                },
-                activeColor: _themeColor,
+            Container(
+              margin: EdgeInsets.only(bottom: 4.h),
+              child: Material(
+                color: _timeRange == range 
+                    ? _themeColor.withOpacity(0.1) 
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () {
+                    setState(() => _timeRange = range);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                    child: Row(
+                      children: [
+                        Icon(
+                          _timeRange == range ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                          color: _timeRange == range ? _themeColor : PremiumColors.smokeGrey,
+                          size: 20.w,
+                        ),
+                        SizedBox(width: 12.w),
+                        Text(
+                          range, 
+                          style: TextStyle(
+                            color: _timeRange == range ? _themeColor : PremiumColors.darkCharcoal,
+                            fontSize: 14.sp,
+                            fontWeight: _timeRange == range ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                        ),
+                        if (_timeRange == range) ...[
+                          Spacer(),
+                          Icon(
+                            Icons.check,
+                            color: _themeColor,
+                            size: 18.w,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ).toList(),
@@ -1121,6 +1952,350 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
       ...PremiumColors.premiumCategoryColors,
     ];
     return colors[index % colors.length];
+  }
+
+  // 获取趋势图数据
+  List<Map<String, dynamic>> _getTrendChartData(TransactionProvider provider) {
+    final records = _getFilteredRecords(provider);
+    if (records.isEmpty) return [];
+    
+    // 按日期分组统计
+    final Map<String, double> dailyTotals = {};
+    final now = DateTime.now();
+    final startDate = _getStartDate(now);
+    
+    // 初始化日期范围内的所有日期
+    for (int i = 0; i <= now.difference(startDate).inDays; i++) {
+      final date = startDate.add(Duration(days: i));
+      final dateKey = DateFormat('MM-dd').format(date);
+      dailyTotals[dateKey] = 0;
+    }
+    
+    // 统计每日金额
+    for (final record in records) {
+      if (record.date.isAfter(startDate.subtract(const Duration(days: 1)))) {
+        final dateKey = DateFormat('MM-dd').format(record.date);
+        dailyTotals[dateKey] = (dailyTotals[dateKey] ?? 0) + 
+            (record.type == TransactionType.income ? record.amount : -record.amount);
+      }
+    }
+    
+    // 转换为列表并累计
+    final List<Map<String, dynamic>> trendData = [];
+    double cumulativeAmount = 0;
+    int index = 0;
+    
+    dailyTotals.forEach((date, amount) {
+      cumulativeAmount += amount;
+      trendData.add({
+        'date': date,
+        'amount': amount,
+        'cumulative': cumulativeAmount,
+        'index': index++,
+      });
+    });
+    
+    return trendData;
+  }
+
+  // 获取开始日期
+  DateTime _getStartDate(DateTime now) {
+    switch (_timeRange) {
+      case '本周':
+        return now.subtract(Duration(days: 7));
+      case '本月':
+        return DateTime(now.year, now.month, 1);
+      case '三个月':
+        return now.subtract(Duration(days: 90));
+      case '一年':
+        return now.subtract(Duration(days: 365));
+      default:
+        return now.subtract(Duration(days: 30));
+    }
+  }
+
+  // 获取Y轴间隔
+  double _getHorizontalInterval(List<Map<String, dynamic>> data) {
+    if (data.isEmpty) return 100;
+    
+    final maxValue = _getMaxY(data);
+    if (maxValue <= 1000) return 200;
+    if (maxValue <= 5000) return 1000;
+    if (maxValue <= 10000) return 2000;
+    return 5000;
+  }
+
+  // 获取X轴日期间隔
+  double _getDateInterval(int dataLength) {
+    if (dataLength <= 7) return 1;
+    if (dataLength <= 31) return 5;
+    if (dataLength <= 90) return 15;
+    return 30;
+  }
+
+  // 构建日期标签
+  Widget _buildDateLabel(double value, List<Map<String, dynamic>> data) {
+    if (value.toInt() >= data.length || value < 0) {
+      return SizedBox.shrink();
+    }
+    
+    final dateStr = data[value.toInt()]['date'] as String;
+    return Container(
+      margin: EdgeInsets.only(top: 8.h),
+      child: Text(
+        dateStr,
+        style: TextStyle(
+          color: PremiumColors.smokeGrey,
+          fontSize: 10.sp,
+        ),
+      ),
+    );
+  }
+
+  // 构建金额标签
+  Widget _buildAmountLabel(double value) {
+    return Container(
+      margin: EdgeInsets.only(right: 8.w),
+      child: Text(
+        value >= 10000 ? '${(value / 10000).toStringAsFixed(1)}w' : value.toStringAsFixed(0),
+        style: TextStyle(
+          color: PremiumColors.smokeGrey,
+          fontSize: 10.sp,
+        ),
+      ),
+    );
+  }
+
+  // 获取Y轴最大值
+  double _getMaxY(List<Map<String, dynamic>> data) {
+    double maxValue = 0;
+    for (final item in data) {
+      final cumulative = item['cumulative'] as double;
+      if (cumulative > maxValue) maxValue = cumulative;
+    }
+    // 增加20%的边距
+    return maxValue * 1.2;
+  }
+
+  // 获取折线数据
+  List<LineChartBarData> _getLineBarsData(List<Map<String, dynamic>> data) {
+    return [
+      LineChartBarData(
+        spots: data.map((item) {
+          return FlSpot(
+            item['index'].toDouble(),
+            item['cumulative'] as double,
+          );
+        }).toList(),
+        isCurved: true,
+        curveSmoothness: 0.3,
+        color: _themeColor,
+        barWidth: 3,
+        isStrokeCapRound: true,
+        dotData: FlDotData(
+          show: data.length <= 31,
+          getDotPainter: (spot, percent, barData, index) {
+            return FlDotCirclePainter(
+              radius: 4,
+              color: Colors.white,
+              strokeWidth: 2,
+              strokeColor: _themeColor,
+            );
+          },
+        ),
+        belowBarData: BarAreaData(
+          show: true,
+          color: _themeColor.withOpacity(0.1),
+          gradient: LinearGradient(
+            colors: [
+              _themeColor.withOpacity(0.2),
+              _themeColor.withOpacity(0.0),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  // 获取提示项
+  List<LineTooltipItem> _getTooltipItems(
+    List<LineBarSpot> spots,
+    List<Map<String, dynamic>> data,
+  ) {
+    return spots.map((spot) {
+      final index = spot.x.toInt();
+      if (index >= data.length) return null;
+      
+      final item = data[index];
+      final date = item['date'] as String;
+      final dailyAmount = item['amount'] as double;
+      final cumulative = item['cumulative'] as double;
+      
+      return LineTooltipItem(
+        '$date\n',
+        TextStyle(
+          color: Colors.white,
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w400,
+        ),
+        children: [
+          TextSpan(
+            text: '当日: ¥${dailyAmount.toStringAsFixed(2)}\n',
+            style: TextStyle(
+              color: dailyAmount >= 0 
+                  ? PremiumColors.successEmerald 
+                  : PremiumColors.errorRed,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          TextSpan(
+            text: '累计: ¥${cumulative.toStringAsFixed(2)}',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      );
+    }).whereType<LineTooltipItem>().toList();
+  }
+
+  // 构建趋势摘要卡片
+  Widget _buildTrendSummaryCard(List<Map<String, dynamic>> data) {
+    final firstValue = data.first['cumulative'] as double;
+    final lastValue = data.last['cumulative'] as double;
+    final change = lastValue - firstValue;
+    
+    // 计算日均
+    final dailyAverage = change / data.length;
+    
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '期间统计',
+            style: TextStyle(
+              color: PremiumColors.darkCharcoal,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildSummaryItem(
+                  '期初余额',
+                  '¥${firstValue.toStringAsFixed(2)}',
+                  PremiumColors.smokeGrey,
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 40.h,
+                color: PremiumColors.cardBorder,
+              ),
+              Expanded(
+                child: _buildSummaryItem(
+                  '期末余额',
+                  '¥${lastValue.toStringAsFixed(2)}',
+                  _themeColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildSummaryItem(
+                  '净变化',
+                  '${change >= 0 ? '+' : ''}¥${change.toStringAsFixed(2)}',
+                  change >= 0 ? PremiumColors.successEmerald : PremiumColors.errorRed,
+                  showArrow: true,
+                  isPositive: change >= 0,
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 40.h,
+                color: PremiumColors.cardBorder,
+              ),
+              Expanded(
+                child: _buildSummaryItem(
+                  '日均',
+                  '${dailyAverage >= 0 ? '+' : ''}¥${dailyAverage.toStringAsFixed(2)}',
+                  PremiumColors.infoNavy,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建摘要项
+  Widget _buildSummaryItem(String label, String value, Color color, 
+      {bool showArrow = false, bool isPositive = true}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: PremiumColors.smokeGrey,
+              fontSize: 12.sp,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (showArrow) 
+                Icon(
+                  isPositive ? Icons.trending_up : Icons.trending_down,
+                  color: color,
+                  size: 16.w,
+                ),
+              if (showArrow) SizedBox(width: 4.w),
+              Flexible(
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   IconData _getCategoryIcon(String category) {

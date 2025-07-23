@@ -64,6 +64,7 @@ import '../help/help_page.dart';
 import '../statistics/statistics_page.dart';
 import '../settings/personalization_page.dart';
 import '../../config/constants.dart';
+import '../../config/premium_color_scheme.dart';
 import '../../utils/responsive_layout.dart';
 import 'widgets/home_content.dart';
 import '../../utils/modern_ui_styles.dart';
@@ -892,7 +893,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],   // 外部背景色：浅灰色(#F5F5F5)，在平板/桌面端可见
+      backgroundColor: PremiumColors.smokeGrey,   // 外部背景色：高级烟灰色，企业级设计
       body: ResponsiveLayout.responsive(  // 响应式布局系统：根据屏幕宽度自动选择布局
         mobile: _buildMobileLayout(),     // 移动端布局：<600px，全屏垂直滑动体验
         tablet: _buildTabletLayout(),     // 平板端布局：600-1200px，居中显示带边框
@@ -914,7 +915,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       margin: layout['margin'] ?? EdgeInsets.zero, // 外边距：移动端为zero(无边距)
       decoration: BoxDecoration(
         border: layout['showBorder'] ? Border.all( // 边框：移动端showBorder=false(无边框)
-          color: Colors.grey.withOpacity(0.3),    // 边框颜色：30%透明灰色
+          color: PremiumColors.cardBorder,        // 边框颜色：高级卡片边框色
           width: 1.w,                             // 边框宽度：1逻辑像素
         ) : null,
         borderRadius: BorderRadius.circular(layout['borderRadius']), // 圆角：移动端为0.0(无圆角)
@@ -961,7 +962,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         padding: layout['padding'] ?? EdgeInsets.zero, // 内边距：布局参数控制
         decoration: BoxDecoration(
           border: layout['showBorder'] ? Border.all( // 边框：平板端showBorder=true(显示边框)
-            color: Colors.grey.withOpacity(0.3),     // 边框颜色：30%透明灰色
+            color: PremiumColors.cardBorder,         // 边框颜色：高级卡片边框色
             width: 1.w,                              // 边框宽度：1逻辑像素
           ) : null,
           borderRadius: BorderRadius.circular(layout['borderRadius']), // 圆角：平板端约12.0逻辑像素
@@ -972,7 +973,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               offset: Offset(0, 10.h),               // 阴影偏移：向下10逻辑像素
             ),
           ] : null,
-          color: Colors.white,                      // 容器背景：白色卡片背景
+          color: Colors.white,                     // 容器背景：白色卡片背景
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(layout['borderRadius']), // 裁剪圆角：与容器保持一致
@@ -1009,7 +1010,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         padding: layout['padding'] ?? EdgeInsets.zero, // 内边距：布局参数控制
         decoration: BoxDecoration(
           border: layout['showBorder'] ? Border.all( // 边框：桌面端showBorder=true(显示边框)
-            color: Colors.grey.withOpacity(0.3),     // 边框颜色：30%透明灰色
+            color: PremiumColors.cardBorder,         // 边框颜色：高级卡片边框色
             width: 1.w,                              // 边框宽度：1逻辑像素
           ) : null,
           borderRadius: BorderRadius.circular(layout['borderRadius']), // 圆角：桌面端约16.0逻辑像素
@@ -1020,7 +1021,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               offset: Offset(0, 10.h),               // 阴影偏移：向下10逻辑像素
             ),
           ] : null,
-          color: Colors.white,                      // 容器背景：白色卡片背景
+          color: Colors.white,                     // 容器背景：白色卡片背景
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(layout['borderRadius']), // 裁剪圆角：与容器保持一致
@@ -1080,8 +1081,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Container(
       height: AppConstants.appBarHeight + 6,           // 导航栏高度：基础高度+6px额外空间
       decoration: BoxDecoration(
-        color: AppConstants.backgroundColor,           // 背景色：白色(#FFFFFF)
-        boxShadow: AppConstants.shadowMedium,          // 阴影：中等强度阴影，提供层次感
+        color: Colors.white,                           // 背景色：白色
+        boxShadow: [
+          BoxShadow(
+            color: PremiumColors.cardShadow,           // 阴影颜色：高级阴影色
+            blurRadius: 8.0,                           // 模糊半径：柔和阴影
+            offset: Offset(0, 2.0),                    // 阴影偏移：向下2像素
+          ),
+        ],
       ),
       child: SafeArea(                                 // 安全区域：避免状态栏遮挡
         child: Padding(
@@ -1095,9 +1102,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   icon: Container(
                     padding: EdgeInsets.all(AppConstants.spacingSmall.w), // 图标内边距：小间距
                     decoration: BoxDecoration(
-                      color: AppConstants.backgroundColor,     // 容器背景：白色
+                      color: Colors.white,                     // 容器背景：白色
                       borderRadius: BorderRadius.circular(AppConstants.radiusMedium), // 圆角：中等圆角
-                      boxShadow: AppConstants.shadowSmall,     // 阴影：小阴影效果
+                      boxShadow: [
+                        BoxShadow(
+                          color: PremiumColors.cardShadow.withOpacity(0.2), // 阴影：高级阴影色
+                          blurRadius: 4.0,                      // 模糊半径：柔和阴影
+                          offset: Offset(0, 1.0),               // 阴影偏移：向下1像素
+                        ),
+                      ],
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(AppConstants.radiusMedium), // 裁剪圆角
@@ -1125,14 +1138,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         width: (AppConstants.iconXLarge + 4).w,  // 容器宽度：超大图标+4px
                         height: (AppConstants.iconXLarge + 4).h, // 容器高度：超大图标+4px
                         decoration: BoxDecoration(
-                          color: AppConstants.backgroundColor,   // 背景色：白色
+                          color: Colors.white,                     // 背景色：白色
                           borderRadius: BorderRadius.circular(AppConstants.radiusMedium), // 圆角：中等圆角
-                          boxShadow: AppConstants.shadowMedium,  // 阴影：中等强度阴影
+                          boxShadow: [
+                            BoxShadow(
+                              color: PremiumColors.cardShadow.withOpacity(0.2), // 阴影：高级阴影色
+                              blurRadius: 4.0,                    // 模糊半径：柔和阴影
+                              offset: Offset(0, 1.0),             // 阴影偏移：向下1像素
+                            ),
+                          ],
                         ),
                         child: Icon(
                           Icons.savings,                         // 储蓄图标：代表金钱罐头概念
                           size: AppConstants.iconMedium.sp,      // 图标尺寸：中等尺寸
-                          color: AppConstants.primaryColor,      // 图标颜色：主题色(蓝色)
+                          color: PremiumColors.deepWineRed,      // 图标颜色：高级深酒红色
                         ),
                       ),
                     ),
@@ -1141,7 +1160,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       'MoneyJars',                             // 应用名称：MoneyJars金钱罐头
                       style: TextStyle(
                         fontWeight: FontWeight.bold,           // 字体粗细：粗体
-                        color: AppConstants.primaryColor,      // 文字颜色：主题色(蓝色)
+                        color: PremiumColors.deepWineRed,      // 文字颜色：高级深酒红色
                         fontSize: AppConstants.fontSizeXLarge.sp, // 字体大小：超大字体
                       ),
                     ),
@@ -1363,12 +1382,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             height: isActive ? 12.h : 8.h,                // 圆点高度：活跃时12，非活跃时8
             decoration: BoxDecoration(
               color: isActive                             // 动态颜色：
-                  ? AppConstants.primaryColor             // 活跃状态：主题蓝色
-                  : Colors.grey.withOpacity(0.5),        // 非活跃状态：50%透明灰色
+                  ? PremiumColors.deepWineRed             // 活跃状态：高级深酒红色
+                  : PremiumColors.silverGrey,             // 非活跃状态：高级银灰色
               shape: BoxShape.circle,                     // 形状：正圆形
               boxShadow: isActive ? [                     // 活跃时发光效果
                 BoxShadow(
-                  color: AppConstants.primaryColor.withOpacity(0.6),
+                  color: PremiumColors.deepWineRed.withOpacity(0.6),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),
@@ -1381,8 +1400,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             duration: ModernUIStyles.shortAnimationDuration,
             style: TextStyle(
               color: isActive                             // 动态颜色：
-                  ? AppConstants.primaryColor             // 活跃状态：主题蓝色
-                  : Colors.grey.withOpacity(0.7),        // 非活跃状态：70%透明灰色
+                  ? PremiumColors.deepWineRed             // 活跃状态：高级深酒红色
+                  : PremiumColors.silverGrey,             // 非活跃状态：高级银灰色
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal, // 活跃时加粗
               fontSize: isActive ? 10.sp : 8.sp,          // 字体大小：活跃时稍大
             ),
