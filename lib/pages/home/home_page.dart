@@ -58,6 +58,7 @@ import '../../widgets/gesture_handler.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/error_widget.dart';
 import '../detail/jar_detail_page.dart';
+import '../detail/jar_detail_page_new.dart';
 // Settings page removed - now in sidebar
 import '../help/help_page.dart';
 import '../statistics/statistics_page.dart';
@@ -272,9 +273,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => JarDetailPage(
+        pageBuilder: (context, animation, secondaryAnimation) => JarDetailPageNew(
           type: type,                         // 交易类型：收入、支出或综合
-          provider: provider,                 // 数据提供者：TransactionProvider实例
           isComprehensive: isComprehensive,   // 是否为综合统计：true=综合罐头, false=单类型罐头
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {

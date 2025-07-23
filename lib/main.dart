@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'services/providers/transaction_provider.dart';
 import 'pages/home/home_page.dart';
 import 'config/constants.dart';
+import 'config/premium_color_scheme.dart';
 // Loading widget import removed - not needed in main
 import 'widgets/common/error_widget.dart';
 import 'utils/env_check.dart';
@@ -48,21 +49,14 @@ class MoneyJarsApp extends StatelessWidget {
           return MaterialApp(
             title: 'MoneyJars',
             debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFFDC143C),
-            brightness: Brightness.dark,
-          ),
-          useMaterial3: true,
-          fontFamily: 'SF Pro Display',
-          scaffoldBackgroundColor: const Color(0xFF0D2818),
-          cardColor: const Color(0xFF1A3D2E),
-          dividerColor: const Color(0xFFFFD700),
-          textTheme: TextTheme(
-            headlineLarge: AppConstants.headingStyle,
-            titleLarge: AppConstants.titleStyle,
-            bodyLarge: AppConstants.bodyStyle,
-            bodySmall: AppConstants.captionStyle,
+        theme: PremiumTheme.darkTheme.copyWith(
+          textTheme: PremiumTheme.darkTheme.textTheme.merge(
+            TextTheme(
+              headlineLarge: AppConstants.headingStyle,
+              titleLarge: AppConstants.titleStyle,
+              bodyLarge: AppConstants.bodyStyle,
+              bodySmall: AppConstants.captionStyle,
+            ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
