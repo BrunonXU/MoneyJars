@@ -18,7 +18,6 @@ import '../../config/premium_color_scheme.dart';
 import '../../models/transaction_record_hive.dart';
 import '../../services/providers/transaction_provider.dart';
 import '../../widgets/common/loading_widget.dart';
-import '../../widgets/common/error_widget.dart';
 
 // 视图模式枚举
 enum ViewMode { pie, list, trend }

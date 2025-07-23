@@ -120,12 +120,12 @@ class PremiumTheme {
     ),
     
     // 卡片主题
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: PremiumColors.cardBackground,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+        side: BorderSide(
           color: PremiumColors.cardBorder,
           width: 1,
         ),
