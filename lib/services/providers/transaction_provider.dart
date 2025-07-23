@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/transaction_record_hive.dart' as hive;
 import '../storage_service.dart';
+import '../sample_data_generator.dart';
 
 class TransactionProvider extends ChangeNotifier {
   final StorageService _storageService = StorageServiceFactory.getInstance();
@@ -155,6 +156,9 @@ class TransactionProvider extends ChangeNotifier {
     await _loadTransactions();
     await _loadCustomCategories();
     await _loadJarSettings();
+    
+    // 检查是否需要生成示例数据（首次使用）
+    await _generateSampleDataIfNeeded();
   }
 
   // 加载交易记录
@@ -315,6 +319,56 @@ class TransactionProvider extends ChangeNotifier {
       await updateTransaction(archivedTransaction);
     } catch (e) {
       debugPrint('归档交易记录失败: $e');
+      rethrow;
+    }
+  }
+
+  // 生成示例数据（如果需要）
+  Future<void> _generateSampleDataIfNeeded() async {
+    try {
+      // 只有当完全没有交易记录时才生成示例数据
+      if (SampleDataGenerator.shouldGenerateSampleData(_transactions)) {
+        debugPrint('🎯 检测到首次使用，正在生成示例数据...');
+        
+        final sampleRecords = SampleDataGenerator.generateSampleData();
+        
+        // 批量添加示例数据
+        for (final record in sampleRecords) {
+          await _storageService.addTransaction(record);
+        }
+        
+        // 重新加载数据以更新UI
+        await _loadTransactions();
+        
+        debugPrint('✅ 成功生成 ${sampleRecords.length} 条示例数据');
+      }
+    } catch (e) {
+      debugPrint('⚠️ 生成示例数据失败: $e');
+      // 不抛出异常，避免影响应用正常启动
+    }
+  }
+
+  // 手动重新生成示例数据（开发调试用）
+  Future<void> regenerateSampleData() async {
+    try {
+      // 清空现有数据
+      await _storageService.clearTransactions();
+      _transactions.clear();
+      
+      // 生成新的示例数据
+      final sampleRecords = SampleDataGenerator.generateSampleData();
+      
+      // 批量添加示例数据
+      for (final record in sampleRecords) {
+        await _storageService.addTransaction(record);
+      }
+      
+      // 重新加载数据
+      await _loadTransactions();
+      
+      debugPrint('✅ 重新生成了 ${sampleRecords.length} 条示例数据');
+    } catch (e) {
+      debugPrint('⚠️ 重新生成示例数据失败: $e');
       rethrow;
     }
   }

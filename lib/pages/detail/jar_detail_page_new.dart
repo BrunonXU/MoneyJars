@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../../config/premium_color_scheme.dart';
 import '../../models/transaction_record_hive.dart';
 import '../../services/providers/transaction_provider.dart';
@@ -444,10 +445,305 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
 
   // 构建饼状图视图
   Widget _buildPieChartView() {
-    return Center(
-      child: Text(
-        '饼状图视图开发中...',
-        style: TextStyle(color: PremiumColors.darkCharcoal),
+    return Consumer<TransactionProvider>(
+      builder: (context, provider, _) {
+        final categoryData = _getCategoryPieData(provider);
+        
+        if (categoryData.isEmpty) {
+          return _buildEmptyState();
+        }
+        
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            children: [
+              // 饼状图容器
+              Container(
+                height: 320.h,
+                margin: EdgeInsets.only(bottom: 24.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // 标题
+                    Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: Text(
+                        '分类占比分析',
+                        style: TextStyle(
+                          color: PremiumColors.darkCharcoal,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    // 饼状图
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                        child: Row(
+                          children: [
+                            // 左侧饼图
+                            Expanded(
+                              flex: 3,
+                              child: AspectRatio(
+                                aspectRatio: 1,
+                                child: PieChart(
+                                  PieChartData(
+                                    sections: categoryData.map((data) => PieChartSectionData(
+                                      color: data['color'],
+                                      value: data['amount'],
+                                      title: data['percentage'] > 5 
+                                          ? '${data['percentage'].toStringAsFixed(0)}%' 
+                                          : '',
+                                      radius: 50.w,
+                                      titleStyle: TextStyle(
+                                        fontSize: 10.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black.withOpacity(0.5),
+                                            offset: const Offset(1, 1),
+                                            blurRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                    )).toList(),
+                                    sectionsSpace: 2,
+                                    centerSpaceRadius: 25.w,
+                                    startDegreeOffset: -90,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 16.w),
+                            // 右侧图例
+                            Expanded(
+                              flex: 2,
+                              child: _buildCompactLegend(categoryData),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // 分类图例列表
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(20.w),
+                      child: Text(
+                        '分类详情',
+                        style: TextStyle(
+                          color: PremiumColors.darkCharcoal,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    ...categoryData.map((data) => _buildCategoryItem(data)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 构建紧凑型图例
+  Widget _buildCompactLegend(List<Map<String, dynamic>> categoryData) {
+    final displayData = categoryData.take(5).toList(); // 最多显示前5个，避免溢出
+    
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          ...displayData.map((data) => Container(
+            margin: EdgeInsets.only(bottom: 6.h),
+            child: Row(
+              children: [
+                // 颜色指示器
+                Container(
+                  width: 10.w,
+                  height: 10.w,
+                  decoration: BoxDecoration(
+                    color: data['color'],
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                SizedBox(width: 6.w),
+                // 分类名称和百分比
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        data['category'],
+                        style: TextStyle(
+                          color: PremiumColors.darkCharcoal,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        '${data['percentage'].toStringAsFixed(1)}%',
+                        style: TextStyle(
+                          color: PremiumColors.smokeGrey,
+                          fontSize: 9.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          )),
+          if (categoryData.length > 5)
+            Padding(
+              padding: EdgeInsets.only(top: 4.h),
+              child: Text(
+                '+ ${categoryData.length - 5} more',
+                style: TextStyle(
+                  color: PremiumColors.smokeGrey,
+                  fontSize: 9.sp,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // 构建最大分类标记
+  Widget _buildLargestBadge() {
+    return Container(
+      padding: EdgeInsets.all(4.w),
+      decoration: BoxDecoration(
+        color: _themeColor,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: _themeColor.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Icon(
+        Icons.star,
+        color: Colors.white,
+        size: 16.w,
+      ),
+    );
+  }
+
+  // 构建分类项
+  Widget _buildCategoryItem(Map<String, dynamic> data) {
+    return Container(
+      margin: EdgeInsets.only(left: 20.w, right: 20.w, bottom: 12.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(12),
+        border: data['isLargest'] 
+            ? Border.all(color: _themeColor.withOpacity(0.3), width: 2)
+            : null,
+      ),
+      child: Row(
+        children: [
+          // 颜色指示器
+          Container(
+            width: 16.w,
+            height: 16.w,
+            decoration: BoxDecoration(
+              color: data['color'],
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          
+          // 分类信息
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      data['category'],
+                      style: TextStyle(
+                        color: PremiumColors.darkCharcoal,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (data['isLargest'])
+                      Icon(
+                        Icons.star,
+                        color: _themeColor,
+                        size: 16.w,
+                      ),
+                  ],
+                ),
+                SizedBox(height: 4.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '¥${data['amount'].toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: _themeColor,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      '${data['percentage'].toStringAsFixed(1)}% · ${data['count']}笔',
+                      style: TextStyle(
+                        color: PremiumColors.smokeGrey,
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -749,6 +1045,82 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
         ),
       ),
     );
+  }
+
+  // 获取分类饼状图数据
+  List<Map<String, dynamic>> _getCategoryPieData(TransactionProvider provider) {
+    final records = _getFilteredRecords(provider);
+    if (records.isEmpty) return [];
+    
+    // 按分类聚合数据
+    final Map<String, Map<String, dynamic>> categoryStats = {};
+    double totalAmount = 0;
+    
+    for (final record in records) {
+      final category = record.parentCategory;
+      totalAmount += record.amount;
+      
+      if (categoryStats.containsKey(category)) {
+        categoryStats[category]!['amount'] += record.amount;
+        categoryStats[category]!['count'] += 1;
+      } else {
+        categoryStats[category] = {
+          'amount': record.amount,
+          'count': 1,
+        };
+      }
+    }
+    
+    // 转换为图表数据并排序
+    final List<Map<String, dynamic>> pieData = [];
+    int colorIndex = 0;
+    
+    categoryStats.forEach((category, stats) {
+      final percentage = (stats['amount'] / totalAmount) * 100;
+      pieData.add({
+        'category': category,
+        'amount': stats['amount'],
+        'count': stats['count'],
+        'percentage': percentage,
+        'color': _getCategoryColor(colorIndex),
+        'isLargest': false, // 稍后设置
+      });
+      colorIndex++;
+    });
+    
+    // 按金额排序
+    pieData.sort((a, b) => b['amount'].compareTo(a['amount']));
+    
+    // 标记最大分类
+    if (pieData.isNotEmpty) {
+      pieData[0]['isLargest'] = true;
+    }
+    
+    return pieData;
+  }
+
+  // 获取分类颜色 - 高对比度配色方案
+  Color _getCategoryColor(int index) {
+    final colors = [
+      const Color(0xFF3B82F6), // 蓝色
+      const Color(0xFFEF4444), // 红色
+      const Color(0xFF10B981), // 绿色
+      const Color(0xFFF59E0B), // 黄色
+      const Color(0xFF8B5CF6), // 紫色
+      const Color(0xFFEC4899), // 粉色
+      const Color(0xFF06B6D4), // 青色
+      const Color(0xFFF97316), // 橙色
+      const Color(0xFF84CC16), // 青柠色
+      const Color(0xFF6366F1), // 靛蓝色
+      const Color(0xFFE11D48), // 玫瑰色
+      const Color(0xFF059669), // 翡翠绿
+      // 备用颜色
+      PremiumColors.deepWineRed,
+      PremiumColors.deepForestGreen,
+      PremiumColors.luxuryGold,
+      ...PremiumColors.premiumCategoryColors,
+    ];
+    return colors[index % colors.length];
   }
 
   IconData _getCategoryIcon(String category) {
