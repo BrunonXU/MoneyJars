@@ -1766,8 +1766,55 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
     });
   }
 
-  void _handleBatchAction() {
-    // TODO: 实现批量删除
+  void _handleBatchAction() async {
+    if (_selectedItems.isEmpty) return;
+    
+    // 确认对话框
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('确认删除'),
+        content: Text('确定要删除选中的 ${_selectedItems.length} 条记录吗？此操作不可撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: PremiumColors.errorRed,
+            ),
+            child: Text('删除'),
+          ),
+        ],
+      ),
+    );
+    
+    if (confirmed == true) {
+      final provider = Provider.of<TransactionProvider>(context, listen: false);
+      
+      // 批量删除选中的记录
+      for (String recordId in _selectedItems) {
+        await provider.deleteTransaction(recordId);
+      }
+      
+      // 清空选择状态
+      setState(() {
+        _selectedItems.clear();
+        _isSelectionMode = false;
+      });
+      
+      // 显示成功提示
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('已删除 ${_selectedItems.length} 条记录'),
+            backgroundColor: PremiumColors.successEmerald,
+          ),
+        );
+      }
+    }
   }
 
   void _addNewTransaction() {

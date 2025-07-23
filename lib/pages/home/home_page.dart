@@ -63,6 +63,7 @@ import '../detail/jar_detail_page_new.dart';
 import '../help/help_page.dart';
 import '../statistics/statistics_page.dart';
 import '../settings/personalization_page.dart';
+import '../category/category_management_page.dart';
 import '../../config/constants.dart';
 import '../../config/premium_color_scheme.dart';
 import '../../utils/responsive_layout.dart';
@@ -728,11 +729,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       onTap: () {
         Navigator.pop(context); // 关闭侧边栏
-        // TODO: 导航到分类管理页面
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('分类管理功能开发中'),
-            backgroundColor: Colors.orange,
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CategoryManagementPage(),
           ),
         );
       },

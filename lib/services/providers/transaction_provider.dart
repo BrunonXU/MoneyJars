@@ -386,4 +386,164 @@ class TransactionProvider extends ChangeNotifier {
       rethrow;
     }
   }
+
+  // ===== 分类管理方法 =====
+  
+  // 获取所有分类（内置 + 自定义）
+  List<hive.Category> getCategories() {
+    // 创建内置分类
+    final defaultCategories = [
+      // 支出分类
+      hive.Category.create(id: 'food', name: '餐饮', type: hive.TransactionType.expense, color: 0xFFFF6B6B, icon: 'restaurant', subCategories: []),
+      hive.Category.create(id: 'transport', name: '交通', type: hive.TransactionType.expense, color: 0xFF4ECDC4, icon: 'directions_car', subCategories: []),
+      hive.Category.create(id: 'shopping', name: '购物', type: hive.TransactionType.expense, color: 0xFF45B7D1, icon: 'shopping_bag', subCategories: []),
+      hive.Category.create(id: 'entertainment', name: '娱乐', type: hive.TransactionType.expense, color: 0xFFFFB07A, icon: 'movie', subCategories: []),
+      hive.Category.create(id: 'housing', name: '住房', type: hive.TransactionType.expense, color: 0xFF98D8C8, icon: 'home', subCategories: []),
+      hive.Category.create(id: 'medical', name: '医疗', type: hive.TransactionType.expense, color: 0xFFF7DC6F, icon: 'medical_services', subCategories: []),
+      hive.Category.create(id: 'education', name: '教育', type: hive.TransactionType.expense, color: 0xFFBB8FCE, icon: 'school', subCategories: []),
+      hive.Category.create(id: 'travel', name: '旅行', type: hive.TransactionType.expense, color: 0xFF85C1E9, icon: 'flight', subCategories: []),
+      hive.Category.create(id: 'other_expense', name: '其他', type: hive.TransactionType.expense, color: 0xFFD5DBDB, icon: 'more_horiz', subCategories: []),
+      
+      // 收入分类
+      hive.Category.create(id: 'salary', name: '工资', type: hive.TransactionType.income, color: 0xFF2ECC71, icon: 'work', subCategories: []),
+      hive.Category.create(id: 'investment', name: '投资', type: hive.TransactionType.income, color: 0xFF3498DB, icon: 'show_chart', subCategories: []),
+      hive.Category.create(id: 'part_time', name: '兼职', type: hive.TransactionType.income, color: 0xFFE74C3C, icon: 'work_outline', subCategories: []),
+      hive.Category.create(id: 'gift', name: '礼金', type: hive.TransactionType.income, color: 0xFFF39C12, icon: 'card_giftcard', subCategories: []),
+      hive.Category.create(id: 'other_income', name: '其他', type: hive.TransactionType.income, color: 0xFF9B59B6, icon: 'more_horiz', subCategories: []),
+    ];
+    
+    return [...defaultCategories, ..._customCategories];
+  }
+  
+  // 根据类型获取分类
+  List<hive.Category> getCategoriesByType(hive.TransactionType type) {
+    return getCategories().where((c) => c.type == type).toList();
+  }
+  
+  // 根据ID查找分类
+  hive.Category? getCategoryById(String id) {
+    try {
+      return getCategories().firstWhere((c) => c.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  // 添加自定义分类
+  Future<void> addCategory(hive.Category category) async {
+    try {
+      // 检查分类名称是否已存在
+      final existingCategories = getCategoriesByType(category.type);
+      final nameExists = existingCategories.any((c) => c.name == category.name);
+      
+      if (nameExists) {
+        throw Exception('分类名称"${category.name}"已存在');
+      }
+      
+      // 添加到自定义分类列表
+      _customCategories.add(category);
+      
+      // 持久化存储（如果需要）
+      // await _storageService.saveCustomCategories(_customCategories);
+      
+      _clearCache();
+      notifyListeners();
+      
+      debugPrint('✅ 添加自定义分类: ${category.name}');
+    } catch (e) {
+      debugPrint('❌ 添加分类失败: $e');
+      rethrow;
+    }
+  }
+  
+  // 更新自定义分类
+  Future<void> updateCategory(hive.Category updatedCategory) async {
+    try {
+      final index = _customCategories.indexWhere((c) => c.id == updatedCategory.id);
+      
+      if (index == -1) {
+        throw Exception('未找到要更新的分类');
+      }
+      
+      // 检查新名称是否与其他分类冲突
+      final otherCategories = getCategoriesByType(updatedCategory.type)
+          .where((c) => c.id != updatedCategory.id);
+      final nameExists = otherCategories.any((c) => c.name == updatedCategory.name);
+      
+      if (nameExists) {
+        throw Exception('分类名称"${updatedCategory.name}"已存在');
+      }
+      
+      // 更新分类
+      _customCategories[index] = updatedCategory;
+      
+      // 持久化存储（如果需要）
+      // await _storageService.saveCustomCategories(_customCategories);
+      
+      _clearCache();
+      notifyListeners();
+      
+      debugPrint('✅ 更新自定义分类: ${updatedCategory.name}');
+    } catch (e) {
+      debugPrint('❌ 更新分类失败: $e');
+      rethrow;
+    }
+  }
+  
+  // 删除自定义分类
+  Future<void> deleteCategory(String categoryId) async {
+    try {
+      // 检查是否为内置分类
+      const builtInIds = [
+        'food', 'transport', 'shopping', 'entertainment', 'housing', 
+        'medical', 'education', 'travel', 'other_expense',
+        'salary', 'investment', 'part_time', 'gift', 'other_income'
+      ];
+      
+      if (builtInIds.contains(categoryId)) {
+        throw Exception('不能删除内置分类');
+      }
+      
+      // 查找要删除的分类
+      final categoryToDelete = _customCategories.firstWhere(
+        (c) => c.id == categoryId,
+        orElse: () => throw Exception('未找到要删除的分类'),
+      );
+      
+      // 将使用该分类的交易记录改为"其他"分类
+      final otherCategoryId = categoryToDelete.type == hive.TransactionType.expense 
+          ? 'other_expense' 
+          : 'other_income';
+      
+      final affectedTransactions = _transactions.where((t) => t.parentCategory == categoryId).toList();
+      for (final transaction in affectedTransactions) {
+        final updatedTransaction = hive.TransactionRecord.create(
+          id: transaction.id,
+          amount: transaction.amount,
+          description: transaction.description,
+          parentCategory: otherCategoryId,
+          subCategory: transaction.subCategory,
+          type: transaction.type,
+          date: transaction.date,
+          isArchived: transaction.isArchived,
+        );
+        
+        await updateTransaction(updatedTransaction);
+      }
+      
+      // 从自定义分类列表中移除
+      _customCategories.removeWhere((c) => c.id == categoryId);
+      
+      // 持久化存储（如果需要）
+      // await _storageService.saveCustomCategories(_customCategories);
+      
+      _clearCache();
+      notifyListeners();
+      
+      debugPrint('✅ 删除自定义分类: ${categoryToDelete.name}，影响了 ${affectedTransactions.length} 条交易记录');
+    } catch (e) {
+      debugPrint('❌ 删除分类失败: $e');
+      rethrow;
+    }
+  }
 } 
