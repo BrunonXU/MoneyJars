@@ -59,26 +59,51 @@
 
 ```
 lib/
-├── constants/
-│   └── app_constants.dart          # 应用常量配置
+├── config/
+│   └── constants.dart              # 应用常量配置
 ├── models/
-│   ├── transaction_record.dart     # 旧版数据模型（兼容）
 │   └── transaction_record_hive.dart # Hive数据模型定义
-├── providers/
-│   └── transaction_provider.dart   # 状态管理
+├── pages/                          # 所有页面
+│   ├── home/
+│   │   ├── home_page.dart          # 主页面
+│   │   └── widgets/
+│   │       └── home_content.dart   # 主页内容组件
+│   ├── detail/
+│   │   └── jar_detail_page.dart    # 罐头详情页
+│   ├── statistics/
+│   │   └── statistics_page.dart    # 统计页面
+│   ├── settings/
+│   │   ├── settings_page.dart      # 设置页面
+│   │   └── personalization_page.dart # 个性化页面
+│   └── help/
+│       └── help_page.dart          # 帮助页面
 ├── services/
+│   ├── providers/
+│   │   └── transaction_provider.dart # 状态管理
 │   ├── storage_service.dart        # 统一存储接口
 │   ├── storage_service_mobile.dart # 移动端Hive实现
 │   └── storage_service_web.dart    # Web端localStorage实现
-├── screens/
-│   └── home_screen.dart            # 主界面
-├── widgets/
+├── utils/
+│   ├── env_check.dart              # 环境检查
+│   ├── modern_ui_styles.dart       # UI样式定义
+│   └── responsive_layout.dart      # 响应式布局
+├── widgets/                        # 可复用组件
+│   ├── chart/                      # 图表组件
+│   │   ├── category_chart.dart     # 分类图表
+│   │   └── pie_chart.dart          # 饼图
 │   ├── common/                     # 通用组件
 │   │   ├── loading_widget.dart     # 加载组件
 │   │   └── error_widget.dart       # 错误处理组件
-│   ├── money_jar_widget.dart       # 罐头组件
-│   ├── enhanced_transaction_input.dart # 增强输入组件
-│   ├── drag_record_input.dart      # 拖拽记录组件
+│   ├── input/                      # 输入组件
+│   │   ├── drag_input.dart         # 拖拽记录组件
+│   │   └── transaction_input.dart  # 交易输入组件
+│   ├── jar/                        # 罐头相关组件
+│   │   ├── jar_widget.dart         # 罐头组件
+│   │   ├── jar_page_view.dart      # 罐头页面视图
+│   │   └── jar_page_widget.dart    # 罐头页面组件
+│   ├── navigation/                 # 导航组件
+│   │   ├── app_bar_widget.dart     # 应用栏
+│   │   └── left_navigation_widget.dart # 左侧导航
 │   └── jar_settings_dialog.dart    # 设置对话框
 └── main.dart                       # 应用入口
 ```

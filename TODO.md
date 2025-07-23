@@ -1,174 +1,108 @@
-# MoneyJars 项目问题诊断与修复清单
+# MoneyJars 项目待办事项
 
-## 🚨 **紧急问题** (立即解决)
+## ✅ 已完成的重大改进
+- ✅ 架构重组：清理了新旧架构混乱的问题
+- ✅ 文件结构规范化：screens → pages，统一命名规范
+- ✅ 删除了79个未被引用的新架构文件
+- ✅ 修复了所有import路径问题
+- ✅ 应用可以正常运行
 
-### 1. 架构混乱问题
-- **状态**: 🔴 严重
-- **问题**: 新旧架构并存，代码重复，混乱不堪
-- **影响**: 严重影响维护性和稳定性
-- **文件**:
-  - ❌ `main.dart` vs `main_new.dart` vs `main_simple.dart` (3个入口文件)
-  - ❌ `providers/transaction_provider.dart` vs `presentation/providers/transaction_provider_new.dart` (重复Provider)
-  - ❌ `screens/home_screen.dart` vs `presentation/pages/home/home_page_new.dart` (重复页面)
-  - ❌ 大量带`_new`后缀的文件造成混乱
-- **解决方案**: 立即执行架构统一化计划
+## 🎯 当前待办事项
 
-### 2. 大量未完成功能 (38个TODO)
-- **状态**: 🔴 严重
-- **问题**: 发现38个TODO标记，核心功能不完整
-- **关键未完成功能**:
-  ```
-  - 数据导出/备份功能 (6个TODO)
-  - 主题切换功能 (4个TODO)  
-  - 分类管理系统 (8个TODO)
-  - 数据迁移工具 (12个TODO)
-  - 统计数据传递 (3个TODO)
-  - 帮助系统 (5个TODO)
-  ```
-- **解决方案**: 按优先级逐一完成
+### 🔴 高优先级 (本周内)
 
-### 3. 技术债务累积
-- **状态**: 🟡 需要关注
-- **问题**:
-  - Flutter版本不是最新
-  - 依赖包版本混乱  
-  - 测试覆盖不足
-  - 代码注释缺失
+#### 1. 功能完善
+- [ ] 数据导出功能 - 支持导出为CSV/JSON格式
+- [ ] 数据备份功能 - 本地备份和恢复
+- [ ] 分类管理系统 - 添加/编辑/删除自定义分类
+- [ ] 搜索功能 - 按金额、分类、描述搜索交易记录
 
-## 🔥 **高优先级任务**
+#### 2. UI/UX改进
+- [ ] 修复帮助页面的RenderFlex溢出问题
+- [ ] 优化移动端布局响应式设计
+- [ ] 添加更多动画效果提升用户体验
+- [ ] 统一所有页面的视觉风格
 
-### 4. 企业级安全漏洞
-- **状态**: 🔴 严重
-- **问题**: 缺少企业级安全功能
-- **缺失功能**:
-  ```
-  - ❌ 数据加密存储
-  - ❌ 用户身份验证
-  - ❌ 本地生物识别
-  - ❌ 数据备份加密
-  - ❌ 审计日志功能
-  - ❌ 输入数据验证
-  - ❌ 防SQL注入保护
-  ```
-- **解决方案**: 添加完整的安全体系
+### 🟡 中优先级 (两周内)
 
-### 5. 性能问题
-- **状态**: 🟡 需要优化
-- **问题**:
-  - 缺少查询缓存机制
-  - 列表滚动性能差
-  - 大量不必要的Widget重建
-  - 图片资源未压缩
-- **解决方案**: 实施性能优化计划
+#### 3. 性能优化
+- [ ] 实现列表虚拟滚动，优化大数据量显示
+- [ ] 添加数据缓存机制，减少重复查询
+- [ ] 优化图片资源，减小包体积
+- [ ] 减少不必要的Widget重建
 
-### 6. 国际化支持缺失
-- **状态**: 🟡 企业必需
-- **问题**: 仅支持中文，限制国际化扩展
-- **需要**:
-  - 多语言字符串提取
-  - 完整的i18n框架
-  - 中英文双语支持
-  - 动态语言切换
+#### 4. 测试完善
+- [ ] 编写单元测试覆盖核心业务逻辑
+- [ ] 添加Widget测试
+- [ ] 创建集成测试套件
+- [ ] 达到80%以上的测试覆盖率
 
-## 🎯 **架构统一化行动计划**
+### 🟢 低优先级 (一个月内)
 
-### 第一阶段：文件结构分析 (30分钟)
-```
-原始架构 → 目标架构 映射关系：
+#### 5. 高级功能
+- [ ] 多账户支持 - 支持多个记账本
+- [ ] 预算管理 - 设置月度预算和提醒
+- [ ] 账单提醒 - 定期账单自动提醒
+- [ ] 数据可视化增强 - 更多图表类型
 
-📁 入口文件:
-  main.dart (保留) ← 主入口
-  main_new.dart (删除) ← 测试入口
-  main_simple.dart (删除) ← 简化入口
+#### 6. 国际化
+- [ ] 提取所有硬编码的中文字符串
+- [ ] 实现完整的i18n框架
+- [ ] 添加英文语言支持
+- [ ] 支持动态语言切换
 
-📁 页面文件:
-  screens/home_screen.dart → presentation/pages/home/home_page.dart
-  screens/jar_detail_page.dart → presentation/pages/detail/jar_detail_page.dart  
-  screens/statistics_page.dart → presentation/pages/statistics/statistics_page.dart
-  screens/help_page.dart → presentation/pages/help/help_page.dart
-  screens/personalization_page.dart → presentation/pages/personalization/personalization_page.dart
+## 📋 技术债务清理
 
-📁 状态管理:
-  providers/transaction_provider.dart (保留) → presentation/providers/transaction_provider.dart
-  presentation/providers/transaction_provider_new.dart (删除)
+### 需要重构的代码
+1. **TransactionProvider** - 代码过长，需要拆分职责
+2. **JarDetailPage** - 包含太多空安全警告
+3. **统计页面** - 需要优化数据计算逻辑
 
-📁 组件文件:
-  widgets/money_jar_widget.dart → presentation/widgets/jar/money_jar_widget.dart
-  widgets/drag_record_input.dart → presentation/widgets/input/drag_record_input.dart
-  widgets/enhanced_transaction_input.dart → presentation/widgets/input/transaction_input.dart
+### 代码质量改进
+- [ ] 添加更多代码注释
+- [ ] 统一错误处理机制
+- [ ] 实现日志系统
+- [ ] 代码格式化和lint检查
 
-📁 数据模型:
-  models/transaction_record_hive.dart (保留) → core/data/models/transaction_model.dart
-  core/data/models/transaction_model.dart (合并)
-```
+## 🔒 安全增强 (企业级要求)
 
-### 第二阶段：确认删除清单 (需要用户确认)
-```
-🗑️ 确认删除文件:
-- main_new.dart
-- main_simple.dart  
-- presentation/providers/transaction_provider_new.dart
-- presentation/pages/home/home_page_new.dart
-- presentation/pages/settings/settings_page_new.dart
-- presentation/widgets/input/drag_input/drag_record_input_new.dart
-- 所有其他带 _new 后缀的文件
+### 数据安全
+- [ ] 敏感数据加密存储
+- [ ] 实现数据完整性校验
+- [ ] 添加导出数据加密选项
 
-⚠️ 需要合并功能:
-- transaction_provider.dart ← transaction_provider_new.dart (合并状态管理逻辑)
-- home_page.dart ← home_page_new.dart (合并UI改进)
-- drag_record_input.dart ← drag_record_input_new.dart (合并交互改进)
-```
+### 用户隐私
+- [ ] 本地生物识别认证
+- [ ] 应用锁功能
+- [ ] 数据自动清理策略
 
-### 第三阶段：文件迁移 (1小时)
-1. 创建新的目录结构
-2. 移动文件到对应位置
-3. 更新所有import语句
-4. 合并重复功能代码
+## 📱 平台适配
 
-### 第四阶段：功能完善 (2-3小时)
-1. 完成38个TODO项目
-2. 实现核心缺失功能
-3. 添加安全层
-4. 性能优化
+### Web平台
+- [ ] 优化Web端性能
+- [ ] 支持PWA特性
+- [ ] 改进键盘快捷键
 
-## 📋 **详细待办清单**
+### 移动平台
+- [ ] iOS适配优化
+- [ ] Android材料设计3.0
+- [ ] 平板设备专门布局
 
-### 立即执行 (今天)
-- [ ] 用户确认文件删除/合并清单
-- [ ] 执行架构统一化第一阶段
-- [ ] 更新UI迁移方案.md
-- [ ] 创建文件迁移计划
+## 🚀 未来规划
 
-### 本周内完成
-- [ ] 完成所有TODO项目 (38个)
-- [ ] 实现数据导出功能
-- [ ] 添加主题切换功能
-- [ ] 完善分类管理系统
+### 云同步功能 (v2.0)
+- [ ] 用户账号系统
+- [ ] 云端数据同步
+- [ ] 多设备数据合并
+- [ ] 离线优先策略
 
-### 企业级增强 (1-2周)
-- [ ] 数据加密和身份验证
-- [ ] 完整的错误处理系统
-- [ ] 自动化测试体系
-- [ ] 性能监控系统
-- [ ] 国际化支持
-- [ ] 安全审计和加固
-
-## ⚠️ **风险提醒**
-
-1. **代码备份**: 在删除任何文件前，确保功能已完整迁移
-2. **渐进式迁移**: 不要一次性大改，避免引入bug  
-3. **功能测试**: 每次迁移后立即测试功能完整性
-4. **版本控制**: 每个阶段完成后及时提交
-
-## 📊 **完成度目标**
-
-- **架构统一化**: 0% → 100% (本周目标)
-- **TODO完成度**: 0% → 80% (本周目标)  
-- **企业级功能**: 0% → 60% (两周目标)
-- **安全评分**: 30% → 90% (两周目标)
+### AI功能 (v3.0)
+- [ ] 智能分类建议
+- [ ] 支出预测分析
+- [ ] 个性化理财建议
+- [ ] 异常消费提醒
 
 ---
 
-**🎯 下一步行动**: 请用户确认文件删除/合并清单，然后立即开始架构统一化！
-
-*最后更新: 2025-01-21 - 问题诊断完成，等待用户确认执行计划*
+**最后更新**: 2025-01-23 - 架构重组完成后的真实待办事项
+**下一步**: 修复UI问题，然后逐步完善核心功能
