@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../constants/app_constants.dart';
-import '../../providers/transaction_provider.dart';
+import '../../config/constants.dart';
+import '../../services/providers/transaction_provider.dart';
 import '../../models/transaction_record_hive.dart';
 import '../gesture_handler.dart';
 import 'jar_page_widget.dart';

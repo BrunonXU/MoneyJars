@@ -1,11 +1,9 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/transaction_record_hive.dart' as hive;
 import 'storage_service.dart';
-import 'storage_service_adapter.dart';
-
 /// 平台特定的存储服务实现选择器（移动端）
-/// 使用新架构的适配器
-StorageService createStorageService() => RepositoryStorageAdapter();
+/// 使用Hive存储服务
+StorageService createStorageService() => HiveStorageService();
 
 /// 📱 Hive存储服务实现（移动端）
 class HiveStorageService extends StorageService {

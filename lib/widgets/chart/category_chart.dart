@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
-import '../models/transaction_record_hive.dart';
-import '../providers/transaction_provider.dart';
+import '../../models/transaction_record_hive.dart';
+import '../../services/providers/transaction_provider.dart';
 
 class CategoryChartWidget extends StatefulWidget {
   final TransactionType type;

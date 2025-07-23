@@ -72,7 +72,7 @@ class JarPageWidget extends StatelessWidget {
           
           // 💡 滑动提示：仅支出/收入罐头显示
           if (isExpenseOrIncome && !isComprehensive)
-            _buildSwipeHint(),
+            _buildSwipeHint(context),
         ],
       ),
     );
@@ -100,17 +100,14 @@ class JarPageWidget extends StatelessWidget {
     return JarWidget(
       title: title,
       type: type,
-      currentAmount: currentAmount,
-      targetAmount: targetAmount,
-      color: color,
-      provider: provider,
+      amount: currentAmount,
     );
   }
 
   /// 💡 构建滑动提示
   /// 
   /// 根据交易类型显示不同的滑动提示
-  Widget _buildSwipeHint() {
+  Widget _buildSwipeHint(BuildContext context) {
     late Widget hintWidget;
     late double topPosition;
     

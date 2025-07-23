@@ -17,10 +17,10 @@ import 'package:flutter/services.dart';
 import 'dart:ui' as ui;
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
-import '../models/transaction_record_hive.dart';
-import '../providers/transaction_provider.dart';
-import '../constants/app_constants.dart';
-import '../utils/modern_ui_styles.dart';
+import '../../models/transaction_record_hive.dart';
+import '../../services/providers/transaction_provider.dart';
+import '../../config/constants.dart';
+import '../../utils/modern_ui_styles.dart';
 
 class DragRecordInput extends StatefulWidget {
   final TransactionType type;

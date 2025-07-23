@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/transaction_record_hive.dart';
-import '../providers/transaction_provider.dart';
+import '../services/providers/transaction_provider.dart';
 
 class JarSettingsDialog extends StatefulWidget {
   const JarSettingsDialog({Key? key}) : super(key: key);

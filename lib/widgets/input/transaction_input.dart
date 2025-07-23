@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/transaction_record_hive.dart';
-import '../widgets/drag_record_input.dart';
-import '../constants/app_constants.dart';
-import '../utils/modern_ui_styles.dart';
+import '../../models/transaction_record_hive.dart';
+import 'drag_input.dart';
+import '../../config/constants.dart';
+import '../../utils/modern_ui_styles.dart';
 
 class EnhancedTransactionInput extends StatefulWidget {
   final TransactionType type;

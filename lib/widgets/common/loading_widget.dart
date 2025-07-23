@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_constants.dart';
+import '../../config/constants.dart';
 
 class LoadingWidget extends StatefulWidget {
   final String? message;

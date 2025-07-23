@@ -13,19 +13,19 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/transaction_record_hive.dart';
-import '../providers/transaction_provider.dart';
-import '../constants/app_constants.dart';
-import '../utils/modern_ui_styles.dart';
+import '../../models/transaction_record_hive.dart';
+import '../../services/providers/transaction_provider.dart';
+import '../../config/constants.dart';
+import '../../utils/modern_ui_styles.dart';
 
-class MoneyJarWidget extends StatefulWidget {
+class JarWidget extends StatefulWidget {
   final TransactionType type;
   final double amount;
   final String title;
   final VoidCallback? onTap;
   final VoidCallback? onSettings;
 
-  const MoneyJarWidget({
+  const JarWidget({
     Key? key,
     required this.type,
     required this.amount,
@@ -35,10 +35,10 @@ class MoneyJarWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<MoneyJarWidget> createState() => _MoneyJarWidgetState();
+  State<JarWidget> createState() => _JarWidgetState();
 }
 
-class _MoneyJarWidgetState extends State<MoneyJarWidget>
+class _JarWidgetState extends State<JarWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _hoverController;
   late Animation<double> _hoverScaleAnimation;

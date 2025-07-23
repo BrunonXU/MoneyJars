@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/transaction_record_hive.dart' as hive;
-import '../services/storage_service.dart';
+import '../../models/transaction_record_hive.dart' as hive;
+import '../storage_service.dart';
 
 class TransactionProvider extends ChangeNotifier {
   final StorageService _storageService = StorageServiceFactory.getInstance();

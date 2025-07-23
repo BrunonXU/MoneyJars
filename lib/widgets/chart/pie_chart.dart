@@ -14,8 +14,8 @@
 
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import '../constants/app_constants.dart';
-import '../models/transaction_record_hive.dart';
+import '../../config/constants.dart';
+import '../../models/transaction_record_hive.dart';
 
 // 主分类环状图绘制器
 class EnhancedPieChartPainter extends CustomPainter {
