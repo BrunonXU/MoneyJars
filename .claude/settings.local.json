@@ -34,7 +34,8 @@
       "Bash(pkill:*)",
       "Bash(dart doc:*)",
       "Bash(find:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }
