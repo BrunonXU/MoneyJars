@@ -9,15 +9,12 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../../config/premium_color_scheme.dart';
 import '../../models/transaction_record_hive.dart';
 import '../../services/providers/transaction_provider.dart';
-import '../../widgets/common/loading_widget.dart';
 
 // 视图模式枚举
 enum ViewMode { pie, list, trend }
@@ -95,186 +92,229 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: PremiumTheme.darkTheme,
-      child: Scaffold(
-        backgroundColor: PremiumColors.premiumBlack,
-        body: CustomScrollView(
-          slivers: [
-            _buildSliverAppBar(),
-            _buildAnalysisCard(),
-            _buildViewContent(),
-          ],
-        ),
-        floatingActionButton: _buildFAB(),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA), // 明亮的灰白背景
+      appBar: _buildSimpleAppBar(),
+      body: Column(
+        children: [
+          _buildAnalysisCard(),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 600),
+              switchInCurve: Curves.easeInOut,
+              switchOutCurve: Curves.easeInOut,
+              child: _getViewWidget(),
+            ),
+          ),
+        ],
       ),
+      bottomNavigationBar: _isSearching ? null : _buildBottomNavigation(),
+      floatingActionButton: _buildFAB(),
     );
   }
 
-  // 构建高级AppBar
-  Widget _buildSliverAppBar() {
-    return SliverAppBar(
-      expandedHeight: 120.h,
-      floating: true,
-      pinned: true,
-      backgroundColor: PremiumColors.darkCharcoal,
+  // 构建极简AppBar
+  PreferredSizeWidget _buildSimpleAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      centerTitle: false,
       leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios_new, color: PremiumColors.platinum),
+        icon: Icon(Icons.arrow_back_ios_new, color: PremiumColors.darkCharcoal),
         onPressed: () => Navigator.pop(context),
       ),
-      title: AnimatedOpacity(
-        opacity: _isSearching ? 0.0 : 1.0,
-        duration: const Duration(milliseconds: 300),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _jarTitle,
-              style: TextStyle(
-                color: PremiumColors.platinum,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-              ),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // App图标
+          Container(
+            margin: EdgeInsets.only(right: 8.w),
+            child: Icon(
+              Icons.savings,
+              size: 22.w,
+              color: _themeColor,
             ),
-            Text(
-              _getSubtitle(),
-              style: TextStyle(
-                color: PremiumColors.silverGrey,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w400,
-              ),
+          ),
+          Text(
+            _jarTitle,
+            style: TextStyle(
+              color: PremiumColors.darkCharcoal,
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w600,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       actions: [
-        // 视图切换按钮组
-        if (!_isSearching) ...[
-          _buildViewToggleButton(Icons.pie_chart_rounded, ViewMode.pie),
-          _buildViewToggleButton(Icons.list_alt_rounded, ViewMode.list),
-          _buildViewToggleButton(Icons.show_chart_rounded, ViewMode.trend),
-          SizedBox(width: 8.w),
-        ],
         // 搜索按钮
         IconButton(
           icon: Icon(
             _isSearching ? Icons.close : Icons.search,
-            color: PremiumColors.platinum,
+            color: PremiumColors.darkCharcoal,
           ),
           onPressed: _toggleSearch,
         ),
-        // 更多选项
-        PopupMenuButton<String>(
-          icon: Icon(Icons.more_vert, color: PremiumColors.platinum),
-          color: PremiumColors.darkCharcoal,
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'export',
-              child: Row(
-                children: [
-                  Icon(Icons.download, color: PremiumColors.platinum, size: 20),
-                  SizedBox(width: 12.w),
-                  Text('导出数据', style: TextStyle(color: PremiumColors.platinum)),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'filter',
-              child: Row(
-                children: [
-                  Icon(Icons.filter_list, color: PremiumColors.platinum, size: 20),
-                  SizedBox(width: 12.w),
-                  Text('高级筛选', style: TextStyle(color: PremiumColors.platinum)),
-                ],
-              ),
-            ),
-            if (_currentView == ViewMode.list)
-              PopupMenuItem(
-                value: 'batch',
-                child: Row(
-                  children: [
-                    Icon(Icons.checklist, color: PremiumColors.platinum, size: 20),
-                    SizedBox(width: 12.w),
-                    Text('批量操作', style: TextStyle(color: PremiumColors.platinum)),
-                  ],
-                ),
-              ),
-          ],
-          onSelected: _handleMenuAction,
-        ),
       ],
-      flexibleSpace: _isSearching ? _buildSearchBar() : null,
+      bottom: _isSearching ? _buildSearchBarAsBottom() : null,
     );
   }
 
-  // 构建视图切换按钮
-  Widget _buildViewToggleButton(IconData icon, ViewMode mode) {
-    final isSelected = _currentView == mode;
-    return IconButton(
-      icon: Icon(
-        icon,
-        color: isSelected ? _themeColor : PremiumColors.smokeGrey,
-      ),
-      onPressed: () => _switchView(mode),
-    );
-  }
-
-  // 构建搜索栏
-  Widget _buildSearchBar() {
-    return FlexibleSpaceBar(
-      background: Container(
-        color: PremiumColors.darkCharcoal,
-        padding: EdgeInsets.only(
-          left: 56.w,
-          right: 16.w,
-          bottom: 16.h,
+  // 构建搜索栏作为AppBar的bottom
+  PreferredSizeWidget _buildSearchBarAsBottom() {
+    return PreferredSize(
+      preferredSize: Size.fromHeight(60.h),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            bottom: BorderSide(color: PremiumColors.cardBorder, width: 1),
+          ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            TextField(
-              controller: _searchController,
-              autofocus: true,
-              style: TextStyle(color: PremiumColors.platinum),
-              decoration: InputDecoration(
-                hintText: '搜索描述或金额...',
-                hintStyle: TextStyle(color: PremiumColors.smokeGrey),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: PremiumColors.cardBorder),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: PremiumColors.cardBorder),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: _themeColor, width: 2),
-                ),
-                prefixIcon: Icon(Icons.search, color: PremiumColors.smokeGrey),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(Icons.clear, color: PremiumColors.smokeGrey),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
-              ),
-              onChanged: (value) => setState(() => _searchQuery = value),
+        child: TextField(
+          controller: _searchController,
+          autofocus: true,
+          style: TextStyle(color: PremiumColors.darkCharcoal),
+          decoration: InputDecoration(
+            hintText: '搜索描述或金额...',
+            hintStyle: TextStyle(color: PremiumColors.smokeGrey),
+            filled: true,
+            fillColor: const Color(0xFFF8F9FA),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
             ),
-          ],
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: _themeColor, width: 2),
+            ),
+            prefixIcon: Icon(Icons.search, color: PremiumColors.smokeGrey),
+            suffixIcon: _searchController.text.isNotEmpty
+                ? IconButton(
+                    icon: Icon(Icons.clear, color: PremiumColors.smokeGrey),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = '');
+                    },
+                  )
+                : null,
+          ),
+          onChanged: (value) => setState(() => _searchQuery = value),
         ),
       ),
     );
   }
+
+  // 构建底部导航栏
+  Widget _buildBottomNavigation() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _currentView.index,
+        onTap: (index) => _switchView(ViewMode.values[index]),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        selectedItemColor: _themeColor,
+        unselectedItemColor: PremiumColors.smokeGrey,
+        selectedFontSize: 12.sp,
+        unselectedFontSize: 12.sp,
+        type: BottomNavigationBarType.fixed,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.pie_chart_rounded),
+            activeIcon: Icon(Icons.pie_chart_rounded),
+            label: '分类',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt_rounded),
+            activeIcon: Icon(Icons.list_alt_rounded),
+            label: '列表',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.show_chart_rounded),
+            activeIcon: Icon(Icons.show_chart_rounded),
+            label: '趋势',
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 构建操作按钮组
+  Widget _buildActionButtons() {
+    return PopupMenuButton<String>(
+      icon: Icon(Icons.more_horiz, color: PremiumColors.smokeGrey, size: 20),
+      color: Colors.white,
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'export',
+          child: Row(
+            children: [
+              Icon(Icons.download, color: PremiumColors.darkCharcoal, size: 18),
+              SizedBox(width: 12.w),
+              Text('导出数据', style: TextStyle(color: PremiumColors.darkCharcoal, fontSize: 14.sp)),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'filter',
+          child: Row(
+            children: [
+              Icon(Icons.filter_list, color: PremiumColors.darkCharcoal, size: 18),
+              SizedBox(width: 12.w),
+              Text('高级筛选', style: TextStyle(color: PremiumColors.darkCharcoal, fontSize: 14.sp)),
+            ],
+          ),
+        ),
+        if (_currentView == ViewMode.list)
+          PopupMenuItem(
+            value: 'batch',
+            child: Row(
+              children: [
+                Icon(Icons.checklist, color: PremiumColors.darkCharcoal, size: 18),
+                SizedBox(width: 12.w),
+                Text('批量操作', style: TextStyle(color: PremiumColors.darkCharcoal, fontSize: 14.sp)),
+              ],
+            ),
+          ),
+        if (_currentView == ViewMode.trend)
+          PopupMenuItem(
+            value: 'timeRange',
+            child: Row(
+              children: [
+                Icon(Icons.date_range, color: PremiumColors.darkCharcoal, size: 18),
+                SizedBox(width: 12.w),
+                Text('时间范围', style: TextStyle(color: PremiumColors.darkCharcoal, fontSize: 14.sp)),
+              ],
+            ),
+          ),
+      ],
+      onSelected: _handleMenuAction,
+    );
+  }
+
+  // 删除了未使用的SliverAppBar相关方法
 
   // 构建智能分析卡片
   Widget _buildAnalysisCard() {
-    return SliverToBoxAdapter(
-      child: Consumer<TransactionProvider>(
+    return Consumer<TransactionProvider>(
         builder: (context, provider, _) {
           final stats = _calculateStats(provider);
           
@@ -302,14 +342,13 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
                     Text(
                       '智能分析',
                       style: TextStyle(
-                        color: PremiumColors.platinum,
+                        color: PremiumColors.darkCharcoal,
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    // 时间范围选择器
-                    if (_currentView == ViewMode.trend)
-                      _buildTimeRangeSelector(),
+                    // 高级功能按钮
+                    _buildActionButtons(),
                   ],
                 ),
                 SizedBox(height: 16.h),
@@ -348,8 +387,7 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
             ),
           );
         },
-      ),
-    );
+      );
   }
 
   // 构建统计项
@@ -388,46 +426,9 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
     );
   }
 
-  // 构建时间范围选择器
-  Widget _buildTimeRangeSelector() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: PremiumColors.darkCharcoal,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: PremiumColors.cardBorder),
-      ),
-      child: DropdownButton<String>(
-        value: _timeRange,
-        items: ['本周', '本月', '三个月', '一年']
-            .map((range) => DropdownMenuItem(
-                  value: range,
-                  child: Text(
-                    range,
-                    style: TextStyle(color: PremiumColors.platinum, fontSize: 14.sp),
-                  ),
-                ))
-            .toList(),
-        onChanged: (value) => setState(() => _timeRange = value!),
-        underline: SizedBox(),
-        dropdownColor: PremiumColors.darkCharcoal,
-        icon: Icon(Icons.arrow_drop_down, color: PremiumColors.platinum),
-        isDense: true,
-      ),
-    );
-  }
+  // 删除了原来的时间范围选择器，现在使用对话框
 
-  // 构建视图内容
-  Widget _buildViewContent() {
-    return SliverFillRemaining(
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 600),
-        switchInCurve: Curves.easeInOut,
-        switchOutCurve: Curves.easeInOut,
-        child: _getViewWidget(),
-      ),
-    );
-  }
+  // 删除了未使用的 _buildViewContent 方法
 
   // 获取当前视图组件
   Widget _getViewWidget() {
@@ -446,7 +447,7 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
     return Center(
       child: Text(
         '饼状图视图开发中...',
-        style: TextStyle(color: PremiumColors.platinum),
+        style: TextStyle(color: PremiumColors.darkCharcoal),
       ),
     );
   }
@@ -475,7 +476,7 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
     return Center(
       child: Text(
         '趋势图视图开发中...',
-        style: TextStyle(color: PremiumColors.platinum),
+        style: TextStyle(color: PremiumColors.darkCharcoal),
       ),
     );
   }
@@ -641,9 +642,6 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
   }
 
   // 辅助方法
-  String _getSubtitle() {
-    return DateFormat('yyyy年MM月').format(DateTime.now());
-  }
 
   void _toggleSearch() {
     setState(() {
@@ -672,6 +670,9 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
         break;
       case 'batch':
         _enterSelectionMode(null);
+        break;
+      case 'timeRange':
+        _showTimeRangeDialog();
         break;
     }
   }
@@ -720,6 +721,34 @@ class _JarDetailPageNewState extends State<JarDetailPageNew>
       'count': records.length,
       'changePercent': 12.5, // TODO: 计算真实对比
     };
+  }
+
+  void _showTimeRangeDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('选择时间范围', style: TextStyle(color: PremiumColors.darkCharcoal)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: ['本周', '本月', '三个月', '一年'].map((range) => 
+            ListTile(
+              title: Text(range, style: TextStyle(color: PremiumColors.darkCharcoal)),
+              leading: Radio<String>(
+                value: range,
+                groupValue: _timeRange,
+                onChanged: (value) {
+                  setState(() => _timeRange = value!);
+                  Navigator.pop(context);
+                },
+                activeColor: _themeColor,
+              ),
+            ),
+          ).toList(),
+        ),
+      ),
+    );
   }
 
   IconData _getCategoryIcon(String category) {

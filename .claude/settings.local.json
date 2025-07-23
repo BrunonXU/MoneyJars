@@ -35,7 +35,8 @@
       "Bash(dart doc:*)",
       "Bash(find:*)",
       "Bash(true)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(q)"
     ],
     "deny": []
   }
